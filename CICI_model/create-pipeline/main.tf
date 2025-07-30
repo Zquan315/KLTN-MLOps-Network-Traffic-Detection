@@ -35,7 +35,9 @@ module "codePipeline_module" {
   pipeline_name                   = var.code_pipeline_name_value
   role_arn                        = data.terraform_remote_state.infra.outputs.code_pipeline_role_arn
   s3_bucket                       = data.terraform_remote_state.infra.outputs.bucket_bucket
-  github_branch                   = mod
+  github_repo                     = var.github_repo_value
+  github_oauth_token              = var.github_oauth_token_value
+  github_owner                    = var.github_owner_value 
   build_project_name              = module.codeBuild_module.codebuild-project_name
   application_name                = module.codeDeploy_module.code_deploy_app_name
   deployment_group_name           = module.codeDeploy_module.code_deploy_deployment_group_name
