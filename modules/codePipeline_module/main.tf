@@ -1,3 +1,10 @@
+data "aws_secretsmanager_secret" "github_OAuthToken" {
+  name = "github_oauth_token"
+}
+
+data "aws_secretsmanager_secret_version" "github_OAuthToken_version_data" {
+  secret_id = data.aws_secretsmanager_secret.github_OAuthToken.id
+}
 resource "aws_codepipeline" "codePipeline" {
   name     = var.pipeline_name
   role_arn = var.role_arn
@@ -28,7 +35,7 @@ resource "aws_codepipeline" "codePipeline" {
         Owner = var.github_owner
         Repo  = var.github_repo
         Branch = var.github_branch
-        OAuthToken = var.github_oauth_token
+        OAuthToken = data.aws_secretsmanager_secret_version.github_OAuthToken_version_data.secret_string
         PollForSourceChanges = true
       }
     }

@@ -25,5 +25,9 @@ resource "aws_s3_bucket_public_access_block" "bucket-public-access-block" {
 
 resource "aws_key_pair" "KLTN" {
     key_name   = "KLTN"
-    public_key = file("${path.module}/kltn.pub")
+    public_key = file("~/.ssh/id_rsa.pub")
+}
+
+resource "aws_secretsmanager_secret" "github_OAuthToken" {
+  name = "github_oauth_token"
 }
