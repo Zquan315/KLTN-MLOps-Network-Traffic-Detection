@@ -76,8 +76,8 @@ code_code_pipeline_policy_arn_list_value = [
 
 #load balancer
 load_balancer_type_value = "application" # Application Load Balancer
-frontend_port_value = 3000 # Frontend port for the target group
-backend_port_value = 5000 # Backend port for the target group
+frontend_port_value = 5001 # Frontend port for the target group
+# backend_port_value = 5000 # Backend port for the target group
 http_port_value = 80 # HTTP port for the Application Load Balancer
 
 # auto scaling group

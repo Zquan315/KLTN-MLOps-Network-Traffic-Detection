@@ -83,7 +83,7 @@ module "alb_module" {
   public_subnet_ids     = module.vpc_module.subnet_public_ids
   vpc_id                = module.vpc_module.vpc_id
   frontend_port         = var.frontend_port_value
-  backend_port          = var.backend_port_value
+  # backend_port          = var.backend_port_value
   http_port             = var.http_port_value
 }
 

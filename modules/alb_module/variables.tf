@@ -23,10 +23,10 @@ variable "frontend_port" {
   description = "Port for the frontend target group"
   type        = number
 }
-variable "backend_port" {
-  description = "Port for the backend target group"
-  type        = number
-}
+# variable "backend_port" {
+#   description = "Port for the backend target group"
+#   type        = number
+# }
 variable "http_port" {
   description = "Port for the HTTP listener"
   type        = number
