@@ -1,17 +1,8 @@
 #!/bin/bash 
 
-# === Setup CodeDeploy ===
-mkdir /home/ubuntu/student-management-app 
-sudo chown -R ubuntu:ubuntu /home/ubuntu/student-management-app 
-sudo chmod -R 777 /home/ubuntu/student-management-app
-
+# cài đặt các gói cần thiết
 sudo apt update -y 
 sudo apt install -y ruby wget python3 python3-pip git -y
-
-cd /home/ubuntu 
-wget https://aws-codedeploy-us-east-1.s3.amazonaws.com/latest/install 
-chmod +x ./install 
-sudo ./install auto 
 
 # === Setup IDS ===
 cd /opt
