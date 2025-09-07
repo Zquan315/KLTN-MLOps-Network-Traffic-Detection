@@ -50,7 +50,3 @@ variable "github_repo" {
   type = string
 }
 
-variable "github_oauth_token" {
-  description = "oauth token of github"
-  type = string
-}

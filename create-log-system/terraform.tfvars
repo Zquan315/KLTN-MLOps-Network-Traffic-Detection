@@ -8,5 +8,5 @@ code_build_project_name_value = "codebuild-project"
 
 # CodePipeline
 code_pipeline_name_value = "codePipeline"
-github_repo_value = "KLTN-MLOps-Saving-Model"
+github_repo_value = "KLTN-Log-system-app"
 github_owner_value = "Zquan315"

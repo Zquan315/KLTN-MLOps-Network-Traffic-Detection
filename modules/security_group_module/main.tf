@@ -44,7 +44,7 @@ resource "aws_security_group" "security_group_private" {
 
 resource "aws_security_group" "sg_alb" {
   vpc_id = var.vpc_id
-  name   = "sg-alb"
+  name   = "sg_alb"
 
   ingress {
     from_port   = 80

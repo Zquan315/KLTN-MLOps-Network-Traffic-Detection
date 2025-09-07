@@ -33,10 +33,6 @@ variable "code_pipeline_name_value" {
   type        = string
 }
 
-variable "github_oauth_token_value" {
-  description = "Value of github oauth token"
-  type = string
-}
 
 variable "github_owner_value" {
   description = "User of github"

@@ -13,8 +13,4 @@ variable "s3_bucket" {
   type        = string
 }
 
-variable "github_repo" {
-  description = "name of the Github repository"
-  type        = string
-}
 

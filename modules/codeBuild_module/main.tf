@@ -16,9 +16,7 @@ resource "aws_codebuild_project" "codebuild-project" {
   }
 
   source {
-    type            = "GitHub"
-    location        = var.github_repo
-    git_clone_depth = 1
+    type            = "CODEPIPELINE"
     buildspec = "buildspec.yml"
   }
   source_version = "main"

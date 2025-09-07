@@ -22,24 +22,12 @@ resource "aws_launch_template" "launch_template" {
     }
   }
 
-  user_data = base64encode(<<-EOF
-                #!/bin/bash 
-                mkdir /home/ubuntu/student-management-app 
-                sudo chown -R ubuntu:ubuntu /home/ubuntu/student-management-app 
-                sudo chmod -R 777 /home/ubuntu/student-management-app
-                sudo apt update -y 
-                sudo apt install -y ruby wget 
-                cd /home/ubuntu 
-                wget https://aws-codedeploy-us-east-1.s3.amazonaws.com/latest/install 
-                chmod +x ./install 
-                sudo ./install auto 
-            EOF
-  )
+  user_data = filebase64("C:/quantc/KLTN/KLTN-MLOps-Network-Traffic-Detection/script/ids.sh")
 
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Name = "instance"
+      Name = "instance_ids"
     }
   }
 }
@@ -70,63 +58,63 @@ resource "aws_autoscaling_group" "asg" {
 
 
 
-# test alarms for scaling policies
-resource "aws_sns_topic" "cloudwatch_alarms_topic" {
-  name = "cloudwatch_alarms_topic"
-}
-# Tạo Subscription cho email
-resource "aws_sns_topic_subscription" "email_subscription" {
-  topic_arn = aws_sns_topic.cloudwatch_alarms_topic.arn
-  protocol  = "email"
-  endpoint  = "tocongquan315@gmail.com"
-}
+# # test alarms for scaling policies
+# resource "aws_sns_topic" "cloudwatch_alarms_topic" {
+#   name = "cloudwatch_alarms_topic"
+# }
+# # Tạo Subscription cho email
+# resource "aws_sns_topic_subscription" "email_subscription" {
+#   topic_arn = aws_sns_topic.cloudwatch_alarms_topic.arn
+#   protocol  = "email"
+#   endpoint  = "tocongquan315@gmail.com"
+# }
 
-resource "aws_autoscaling_policy" "scale_out_policy" {
-  name                   = "scale_out_policy"
-  scaling_adjustment     = 1
-  adjustment_type        = "ChangeInCapacity"
-  cooldown               = 300
-  autoscaling_group_name = aws_autoscaling_group.asg.name
-}
+# resource "aws_autoscaling_policy" "scale_out_policy" {
+#   name                   = "scale_out_policy"
+#   scaling_adjustment     = 1
+#   adjustment_type        = "ChangeInCapacity"
+#   cooldown               = 300
+#   autoscaling_group_name = aws_autoscaling_group.asg.name
+# }
 
-resource "aws_autoscaling_policy" "scale_in_policy" {
-  name                   = "scale_in_policy"
-  scaling_adjustment     = -1
-  adjustment_type        = "ChangeInCapacity"
-  cooldown               = 300
-  autoscaling_group_name = aws_autoscaling_group.asg.name
-}
+# resource "aws_autoscaling_policy" "scale_in_policy" {
+#   name                   = "scale_in_policy"
+#   scaling_adjustment     = -1
+#   adjustment_type        = "ChangeInCapacity"
+#   cooldown               = 300
+#   autoscaling_group_name = aws_autoscaling_group.asg.name
+# }
 
-resource "aws_cloudwatch_metric_alarm" "cpu_high" {
-  alarm_name          = "cpu-high"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 2
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = 120
-  statistic           = "Average"
-  threshold           = 70
-  alarm_description   = "Scale out when CPU >= 70%"
-  alarm_actions       = [aws_autoscaling_policy.scale_out_policy.arn,
-                         aws_sns_topic.cloudwatch_alarms_topic.arn]
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.asg.name
-  }
-}
+# resource "aws_cloudwatch_metric_alarm" "cpu_high" {
+#   alarm_name          = "cpu-high"
+#   comparison_operator = "GreaterThanOrEqualToThreshold"
+#   evaluation_periods  = 2
+#   metric_name         = "CPUUtilization"
+#   namespace           = "AWS/EC2"
+#   period              = 120
+#   statistic           = "Average"
+#   threshold           = 70
+#   alarm_description   = "Scale out when CPU >= 70%"
+#   alarm_actions       = [aws_autoscaling_policy.scale_out_policy.arn,
+#                          aws_sns_topic.cloudwatch_alarms_topic.arn]
+#   dimensions = {
+#     AutoScalingGroupName = aws_autoscaling_group.asg.name
+#   }
+# }
 
-resource "aws_cloudwatch_metric_alarm" "cpu_low" {
-  alarm_name          = "cpu-low"
-  comparison_operator = "LessThanOrEqualToThreshold"
-  evaluation_periods  = 2
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = 120
-  statistic           = "Average"
-  threshold           = 50
-  alarm_description   = "Scale in when CPU <= 50%"
-  alarm_actions       = [aws_autoscaling_policy.scale_in_policy.arn,
-                         aws_sns_topic.cloudwatch_alarms_topic.arn]      
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.asg.name
-  }
-}
+# resource "aws_cloudwatch_metric_alarm" "cpu_low" {
+#   alarm_name          = "cpu-low"
+#   comparison_operator = "LessThanOrEqualToThreshold"
+#   evaluation_periods  = 2
+#   metric_name         = "CPUUtilization"
+#   namespace           = "AWS/EC2"
+#   period              = 120
+#   statistic           = "Average"
+#   threshold           = 50
+#   alarm_description   = "Scale in when CPU <= 50%"
+#   alarm_actions       = [aws_autoscaling_policy.scale_in_policy.arn,
+#                          aws_sns_topic.cloudwatch_alarms_topic.arn]      
+#   dimensions = {
+#     AutoScalingGroupName = aws_autoscaling_group.asg.name
+#   }
+# }

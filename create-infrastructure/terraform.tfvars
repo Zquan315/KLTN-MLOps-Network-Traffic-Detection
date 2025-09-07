@@ -2,9 +2,9 @@ region_value  = "us-east-1"
 
 # VPC
 vpc_cidr_block_value         = "172.16.0.0/16"
-vpc_cidr_block_private_value = ["172.16.1.0/24", "172.16.2.0/24"]
-vpc_cidr_block_public_value  = ["172.16.3.0/24", "172.16.4.0/24"]
-vpc_subnet_count_value = 2
+vpc_cidr_block_private_value = ["172.16.1.0/24", "172.16.2.0/24", "172.16.3.0/24"]
+vpc_cidr_block_public_value  = ["172.16.4.0/24", "172.16.5.0/24", "172.16.6.0/24"]
+vpc_subnet_count_value = 3
 
 #route table
 destination_cidr_block_private_value = "0.0.0.0/0"
@@ -45,16 +45,44 @@ ingress_rules_public_value = [
     description = "Access to port 3000 from anywhere for Client - frontend"
   },
   {
-    from_port   = 5000
-    to_port     = 5000
+    from_port   = 9100
+    to_port     = 9100
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "Access to port 5000 from anywhere for Server - backend"
+    description = "Access to port 9100 from anywhere for grafana"
+  },
+  {
+    from_port   = 9090
+    to_port     = 9090
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Access to port 9090 from anywhere for prometheus"
+  },
+  {
+    from_port   = 5001
+    to_port     = 5001
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Access to port 5001 from anywhere for ids"
+  },
+  {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Access to port 8080 from anywhere for log - frontend"
+  },
+  {
+    from_port   = 8081
+    to_port     = 8081
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Access to port 8081 from anywhere for log - backend"
   }
 ]
 
 # S3 bucket
-s3_bucket_name_value = "s3_bucket"
+s3_bucket_name_value = "s3-bucket"
 
 # IAM
 ec2_role_name_value = "ec2_role"
@@ -69,27 +97,6 @@ code_build_dev_access_policy_arn_value = "arn:aws:iam::aws:policy/AWSCodeBuildAd
 code_pipeline_role_name_value = "codePipeline_role"
 code_code_pipeline_policy_arn_list_value = [
   "arn:aws:iam::aws:policy/AmazonS3FullAccess",
-  "arn:aws:iam::aws:policy/AWSCodeCommitFullAccess",
   "arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess",
   "arn:aws:iam::aws:policy/AWSCodeDeployFullAccess", 
 ]
-
-#load balancer
-load_balancer_type_value = "application" # Application Load Balancer
-frontend_port_value = 5001 # Frontend port for the target group
-# backend_port_value = 5000 # Backend port for the target group
-http_port_value = 80 # HTTP port for the Application Load Balancer
-
-# auto scaling group
-ami_id_value = "ami-0f9de6e2d2f067fca" # ubuntu 22.04 ami
-instance_type_value = "t3.medium" # t3.medium instance type
-key_name_value = "KLTN" # my key pair name
-volume_size_value = 20
-volume_type_value = "gp2" # General Purpose SSD (gp2) volume type
-desired_capacity_value = 2
-min_size_value = 2
-max_size_value = 4
-
-# route53
-route53_zone_name_value = "kltn.mmt.uit"
-route53_record_type_value = "A"
