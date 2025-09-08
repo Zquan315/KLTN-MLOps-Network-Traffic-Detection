@@ -82,7 +82,7 @@ ingress_rules_public_value = [
 ]
 
 # S3 bucket
-s3_bucket_name_value = "s3-bucket"
+s3_bucket_name_value = "s3-bucket-qm"
 
 # IAM
 ec2_role_name_value = "ec2_role"
