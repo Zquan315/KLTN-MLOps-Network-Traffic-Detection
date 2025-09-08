@@ -1,12 +1,12 @@
 # modules/load_balancer_module/main.tf
 resource "aws_lb" "alb" {
-  name               = "alb"
+  name               = var.alb_name
   internal           = false
   load_balancer_type = var.load_balancer_type
   security_groups    = var.alb_security_group_id
   subnets            = var.public_subnet_ids
   tags = {
-    Name = "alb"
+    Name = var.alb_name
   }
 }
 

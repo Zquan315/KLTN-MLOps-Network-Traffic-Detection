@@ -44,6 +44,10 @@ variable "volume_type" {
   type        = string
 }
 
+variable "user_data_path" {
+  description = "Path to dest file sh"
+  type        = string
+}
 
 variable "desired_capacity" {
   description = "The desired number of instances in the ASG."
@@ -67,4 +71,13 @@ variable "subnet_ids" {
 variable "target_group_arns" {
   description = "The list of target group ARNs for the ASG instances."
   type        = list(string)
+}
+
+variable "asg_name" {
+  description = "Name of asg"
+  type        = string
+}
+variable "name_instance" {
+  description = "Name of instance"
+  type        = string
 }

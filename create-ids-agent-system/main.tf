@@ -20,6 +20,7 @@ data "terraform_remote_state" "infra" {
 # Create ALB and Target Groups 
 module "alb_module_ids" {
   source = "../modules/alb_module"
+  alb_name              = "alb-ids" 
   load_balancer_type    = var.load_balancer_type_value
   alb_security_group_id = [data.terraform_remote_state.infra.outputs.sg_alb_id]
   public_subnet_ids     = [
@@ -40,6 +41,7 @@ module "alb_module_ids" {
 # create auto scaling group
 module "asg_module_ids" {
   source = "../modules/asg_module"
+  asg_name                  = "asg-ids" 
   ami_id                    = var.ami_id_value
   instance_type             = var.instance_type_value
   key_name                  = var.key_name_value
@@ -51,6 +53,9 @@ module "asg_module_ids" {
   desired_capacity          = var.desired_capacity_value
   min_size                  = var.min_size_value
   max_size                  = var.max_size_value
+
+  name_instance             = "ids_instance" 
+  user_data_path            = var.user_data_path_value 
 
   subnet_ids                = [
     data.terraform_remote_state.infra.outputs.subnet_public_ids[0],

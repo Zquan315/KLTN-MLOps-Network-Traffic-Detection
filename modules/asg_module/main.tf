@@ -22,18 +22,18 @@ resource "aws_launch_template" "launch_template" {
     }
   }
 
-  user_data = filebase64("C:/quantc/KLTN/KLTN-MLOps-Network-Traffic-Detection/script/ids.sh")
+  user_data = filebase64(var.user_data_path)
 
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Name = "instance_ids"
+      Name = var.name_instance
     }
   }
 }
 
 resource "aws_autoscaling_group" "asg" {
-  name                = "asg"
+  name                = var.asg_name
   desired_capacity    = var.desired_capacity
   min_size            = var.min_size
   max_size            = var.max_size
@@ -46,7 +46,7 @@ resource "aws_autoscaling_group" "asg" {
 
   tag {
     key                 = "ASG_Name"
-    value               = "asg"
+    value               = var.asg_name
     propagate_at_launch = true
   }
 

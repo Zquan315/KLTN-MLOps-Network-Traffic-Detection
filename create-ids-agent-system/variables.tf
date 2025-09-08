@@ -44,6 +44,11 @@ variable "max_size_value" {
   type        = number
 }
 
+variable "user_data_path_value" {
+  description = "path for script .sh"
+  type        = string
+}
+
 # variables for route53
 variable "route53_zone_name_value" {
   description = "The name of the Route 53 hosted zone"

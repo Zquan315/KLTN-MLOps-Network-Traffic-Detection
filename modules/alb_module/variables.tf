@@ -1,9 +1,13 @@
 variable "load_balancer_type" {
-  description = "NaTypeme of the ALB"
+  description = "NameType of the ALB"
   type        = string
   default = "application"
 }
 
+variable "alb_name" {
+  description = "Name of the ALB"
+  type        = string
+}
 variable "alb_security_group_id" {
   description = "List of security group IDs for the ALB"
   type        = list(string)

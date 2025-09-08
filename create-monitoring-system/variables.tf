@@ -3,14 +3,7 @@ variable "load_balancer_type_value" {
   description = "Type of the load balancer (e.g., application, network)"
   type        = string
 }
-variable "frontend_port_value" {
-  description = "Port for the frontend target group"
-  type        = number
-}
-# variable "backend_port_value" {
-#   description = "Port for the backend target group"
-#   type        = number
-# }
+
 variable "http_port_value" {
   description = "HTTP port for the Application Load Balancer"
   type        = number
@@ -38,6 +31,12 @@ variable "volume_type_value" {
   description = "Type of the EBS volume (e.g., gp2, io1)"
   type        = string
 }
+
+variable "user_data_path_value" {
+  description = "path for script .sh"
+  type        = string
+}
+
 variable "desired_capacity_value" {
   description = "Desired capacity for the Auto Scaling group"
   type        = number
