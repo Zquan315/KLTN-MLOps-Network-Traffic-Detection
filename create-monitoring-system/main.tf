@@ -2,7 +2,7 @@
 terraform {
   backend "s3" {
     bucket = "terraform-state-bucket-qm"
-    key    = "create-ids-system/terraform.tfstate"
+    key    = "create-monitoring-system/terraform.tfstate"
     region = "us-east-1"
   }
 }
@@ -22,19 +22,11 @@ module "alb_module_ids" {
   source = "../modules/alb_module"
   load_balancer_type    = var.load_balancer_type_value
   alb_security_group_id = [data.terraform_remote_state.infra.outputs.sg_alb_id]
-  public_subnet_ids     = [
-    data.terraform_remote_state.infra.outputs.subnet_public_ids[0],
-    data.terraform_remote_state.infra.outputs.subnet_public_ids[1]
-  ]
-
+  public_subnet_ids     = data.terraform_remote_state.infra.outputs.subnet_public_ids
   vpc_id                = data.terraform_remote_state.infra.outputs.vpc_id
+  frontend_port         = var.frontend_port_value
+  # backend_port          = var.backend_port_value
   http_port             = var.http_port_value
-
-  routes = [
-    { name = "web",     port = 5001, path_patterns = ["/"],        health_path = "/",      matcher = "200" },
-    { name = "metrics", port = 9100, path_patterns = ["/metrics"], health_path = "/metrics", matcher = "200-399" }
-  ]
-  default_route_name = "web"
 }
 
 # create auto scaling group
@@ -51,16 +43,8 @@ module "asg_module_ids" {
   desired_capacity          = var.desired_capacity_value
   min_size                  = var.min_size_value
   max_size                  = var.max_size_value
-
-  subnet_ids                = [
-    data.terraform_remote_state.infra.outputs.subnet_public_ids[0],
-    data.terraform_remote_state.infra.outputs.subnet_public_ids[1]
-  ]
-
-  target_group_arns = [
-    module.alb_module_ids.tg_arns["web"],
-    module.alb_module_ids.tg_arns["metrics"]
-  ]  
+  subnet_ids                = data.terraform_remote_state.infra.outputs.subnet_public_ids
+  target_group_arns         = [module.alb_module_ids.tg_frontend_arn]  
 }
 
 module "route53_module_ids" {

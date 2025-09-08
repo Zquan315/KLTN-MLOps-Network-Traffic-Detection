@@ -19,16 +19,27 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "frontend_port" {
-  description = "Port for the frontend target group"
-  type        = number
-}
-# variable "backend_port" {
-#   description = "Port for the backend target group"
-#   type        = number
-# }
 variable "http_port" {
   description = "Port for the HTTP listener"
   type        = number
   default     = 80
+}
+
+
+# Mỗi route: tạo 1 target group + 1 listener rule
+variable "routes" {
+  description = "Danh sách rule định tuyến theo path → port đích trên EC2"
+  type = list(object({
+    name           = string
+    port           = number
+    path_patterns  = list(string)       # ví dụ ["/metrics"] hoặc ["/logs","/logs/*"]
+    health_path    = string             # ví dụ "/"
+    matcher        = optional(string)   # ví dụ "200" hoặc "200-399"
+  }))
+}
+
+# Tên route dùng làm default_action cho path "/"
+variable "default_route_name" {
+  type        = string
+  description = "Tên route làm default (ứng với path /)"
 }
