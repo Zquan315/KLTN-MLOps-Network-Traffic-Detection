@@ -129,3 +129,8 @@ variable "code_code_pipeline_policy_arn_list_value" {
   description = "List of ARNs for the CodePipeline policies"
   type        = list(string)
 }
+
+variable "table_name_value" {
+  description = "Name of table"
+  type        = string
+}

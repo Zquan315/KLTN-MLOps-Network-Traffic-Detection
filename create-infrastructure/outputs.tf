@@ -41,3 +41,7 @@ output "s3_bucket_bucket" {
 output "code_pipeline_role_arn" {
   value = module.iam_module.code_pipeline_role_arn
 }
+
+output "dynamodb_table" {
+  value = module.dynamodb_module.dynamodb_table_name
+}

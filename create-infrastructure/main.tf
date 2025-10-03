@@ -76,6 +76,10 @@ module "iam_module" {
   user_name                          = var.user_name_value
 }
 
+module "dynamodb_module" {
+  source        = "../modules/dynamodb_module"
+  table_name    = var.table_name_value 
+}
 
 terraform {
   backend "s3" {

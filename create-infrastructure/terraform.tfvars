@@ -100,3 +100,7 @@ code_code_pipeline_policy_arn_list_value = [
   "arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess",
   "arn:aws:iam::aws:policy/AWSCodeDeployFullAccess", 
 ]
+
+
+# dynamodb
+table_name_value = "ids_log_system"
