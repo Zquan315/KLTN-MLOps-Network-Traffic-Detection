@@ -32,6 +32,7 @@ sudo cat > /opt/monitoring/docker-compose.yml <<'YAML'
 services:
   prometheus:
     image: prom/prometheus:latest
+    container_name: prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --web.external-url=http://monitoring.qm.uit/prometheus
@@ -43,6 +44,7 @@ services:
     restart: unless-stopped
   grafana:
     image: grafana/grafana:latest
+    container_name: grafana
     environment:
       - GF_SERVER_ROOT_URL=http://monitoring.qm.uit/
     ports:

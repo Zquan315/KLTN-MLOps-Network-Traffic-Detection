@@ -1,5 +1,5 @@
 resource "aws_dynamodb_table" "ids_log_system" {
-  name         = var.table_name           # ví dụ "ids_log_system"
+  name         = var.table_name           
   billing_mode = "PAY_PER_REQUEST"
 
   hash_key  = "id"

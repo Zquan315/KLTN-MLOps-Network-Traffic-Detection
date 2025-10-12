@@ -1,10 +1,4 @@
-data "aws_secretsmanager_secret" "github_OAuthToken" {
-  name = "github_oauth_token"
-}
 
-data "aws_secretsmanager_secret_version" "github_OAuthToken_version_data" {
-  secret_id = data.aws_secretsmanager_secret.github_OAuthToken.id
-}
 resource "aws_codepipeline" "codePipeline" {
   name     = var.pipeline_name
   role_arn = var.role_arn
@@ -32,12 +26,11 @@ resource "aws_codepipeline" "codePipeline" {
       output_artifacts = ["SourceArtifact"]  # default CodePipeline output artifact
 
       configuration = {
-        Owner = var.github_owner
-        Repo  = var.github_repo
-        Branch = var.github_branch
-        OAuthToken = data.aws_secretsmanager_secret_version.github_OAuthToken_version_data.secret_string
-        PollForSourceChanges = true
-      }
+      ConnectionArn    = "arn:aws:codeconnections:us-east-1:897722710732:connection/307a5f14-e6a2-43ef-8704-ca2954559dc7"
+      FullRepositoryId = "Zquan315/KLTN-Log-system-app"
+      BranchName       = "main"
+}
+
     }
   }
 

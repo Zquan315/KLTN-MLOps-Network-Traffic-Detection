@@ -34,19 +34,3 @@ variable "deployment_group_name" {
   type        = string
 }
 
-variable "github_owner" {
-  description = "github owner"
-  type = string
-}
-
-variable "github_branch" {
-  description = "branch of repo is used"
-  type = string
-  default = "main"
-}
-
-variable "github_repo" {
-  description = "name of repo"
-  type = string
-}
-

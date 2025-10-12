@@ -4,6 +4,9 @@ output "alb_dns_name" {
   
 }
 
+output "tg_names" {
+  value = { for k, r in aws_lb_target_group.tg : k => r.name }
+}
 output "tg_arns" {
   value = { for k, r in aws_lb_target_group.tg : k => r.arn }
 }
