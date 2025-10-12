@@ -19,8 +19,11 @@ resource "aws_codedeploy_deployment_group" "code_deploy_deployment_group" {
     deployment_config_name = "CodeDeployDefault.OneAtATime"
     
     load_balancer_info {
-        target_group_info {
-            name = var.target_group_name
+        dynamic "target_group_info" {
+            for_each = var.target_group_name
+            content {
+                name = target_group_info.value
+            }
         }
     }
 

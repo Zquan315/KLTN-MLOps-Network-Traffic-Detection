@@ -80,7 +80,7 @@ module "route53_module_logs" {
 
 # Create CodeDeploy application and deployment group
 module "codeDeploy_module" {
-  source = "../../modules/codeDeploy_module"
+  source = "../modules/codeDeploy_module"
   code_deploy_app_name        = var.code_deploy_app_name_value
   compute_platform            = var.compute_platform_value
   deployment_group_name       = var.deployment_group_name_value
@@ -92,15 +92,14 @@ module "codeDeploy_module" {
 
 # Create CodeBuild project
 module "codeBuild_module" {
-  source = "../../modules/codeBuild_module"
+  source = "../modules/codeBuild_module"
   project_name                     = var.code_build_project_name_value
   service_role_arn                 = data.terraform_remote_state.infra.outputs.codebuild_role_arn
-  s3_bucket                        = data.terraform_remote_state.infra.outputs.s3_bucket_bucket 
 }
 
 # Create CodePipeline
 module "codePipeline_module" {
-  source = "../../modules/codePipeline_module"
+  source = "../modules/codePipeline_module"
   pipeline_name                   = var.code_pipeline_name_value
   role_arn                        = data.terraform_remote_state.infra.outputs.code_pipeline_role_arn
   s3_bucket                       = data.terraform_remote_state.infra.outputs.s3_bucket_bucket

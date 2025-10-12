@@ -8,9 +8,9 @@ variable "service_role_arn" {
   type        = string
 }
 
-variable "s3_bucket" {
-  description = "S3 bucket to store build artifacts"
-  type        = string
-}
+# variable "s3_bucket" {
+#   description = "S3 bucket to store build artifacts"
+#   type        = string
+# }
 
 

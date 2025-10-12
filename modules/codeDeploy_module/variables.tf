@@ -30,6 +30,6 @@ variable "autoscaling_groups" {
 
 variable "target_group_name" {
     description = "Name of the target group for the deployment"
-    type        = string
+    type        = list(string)
   
 }

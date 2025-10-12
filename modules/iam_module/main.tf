@@ -88,7 +88,12 @@ resource "aws_iam_role_policy" "codedeploy_policy" {
           "autoscaling:DescribeAutoScalingInstances",
           "autoscaling:UpdateAutoScalingGroup",
           "autoscaling:CompleteLifecycleAction",
-          "autoscaling:RecordLifecycleActionHeartbeat"
+          "autoscaling:RecordLifecycleActionHeartbeat",
+          "codedeploy:PollHostCommand",
+          "codedeploy:PutLifecycleEventHookExecutionStatus",
+          "codedeploy:UpdateDeploymentStatus",
+          "codedeploy:GetDeployment",
+          "codedeploy:GetDeploymentConfig"
         ]
         Resource = "*"
       }

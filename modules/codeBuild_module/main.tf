@@ -3,9 +3,7 @@ resource "aws_codebuild_project" "codebuild-project" {
   service_role = var.service_role_arn
 
   artifacts {
-    type      = "S3"
-    location  = var.s3_bucket
-    packaging = "ZIP"
+    type = "CODEPIPELINE"
   }
 
   environment {
