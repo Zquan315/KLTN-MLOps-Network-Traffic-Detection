@@ -4,6 +4,7 @@
 sudo apt update -y
 sudo apt install -y docker.io  docker-compose
 sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
 
 sudo mkdir -p /opt/monitoring
 sudo cat > /opt/monitoring/prometheus.yml <<'YAML'
@@ -23,7 +24,7 @@ scrape_configs:
     metrics_path: /metrics
     scheme: http
     static_configs: 
-      - targets: ["alb-ids-1001117453.us-east-1.elb.amazonaws.com"]   # ALB IDS (HTTP 80 → 9100), thay đổi sau mỗi lần apply
+      - targets: ["alb-ids-1967136192.us-east-1.elb.amazonaws.com"]   # ALB IDS (HTTP 80 → 9100), thay đổi sau mỗi lần apply
         labels:
           app: "ids_node"
 YAML
@@ -35,7 +36,7 @@ services:
     container_name: prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
-      - --web.external-url=http://monitoring.qm.uit/prometheus
+      - --web.external-url=http://monitoring.qm.uit
       - --web.route-prefix=/prometheus
     volumes:
       - /opt/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
