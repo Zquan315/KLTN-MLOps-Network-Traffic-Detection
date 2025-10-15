@@ -1,9 +1,9 @@
 #!/bin/bash
 
-
 sudo apt update -y
 sudo apt install -y docker.io  docker-compose
 sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
 
 sudo mkdir -p /opt/monitoring
 sudo cat > /opt/monitoring/prometheus.yml <<'YAML'
