@@ -28,6 +28,7 @@ Kiểm tra version của các dịch vụ
   teraform plan
   terraform apply
 ```
+> Bên cạnh đó, sẽ tạo ra một **API Instance**, kèm theo một elastic ip cho các IDS agent call API.
 
 ## 3. Tạo hệ thống IDS agent
 - Di chuyển vào thư mục `create-ids-agent-system`

@@ -24,13 +24,3 @@ resource "aws_s3_bucket_public_access_block" "bucket-public-access-block" {
   
 }
 
-
-# resource "aws_secretsmanager_secret" "github_OAuthToken" {
-#   name = "github_oauth_token"
-
-# }
-
-# resource "aws_secretsmanager_secret_version" "github_OAuthToken_value" {
-#   secret_id     = aws_secretsmanager_secret.github_OAuthToken.id
-#   secret_string = var.github_oauth_token_value 
-# }

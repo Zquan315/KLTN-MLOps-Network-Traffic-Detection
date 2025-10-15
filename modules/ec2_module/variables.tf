@@ -30,10 +30,10 @@ variable "associate_public_ip_address" {
 }
 
 
-variable "ec2_instance_profile_name" {
-  description = "The name of the IAM instance profile to associate with the EC2 instance"
-  type        = string
-}
+# variable "ec2_instance_profile_name" {
+#   description = "The name of the IAM instance profile to associate with the EC2 instance"
+#   type        = string
+# }
 
 variable "volume_size" {
   description = "Size of the root volume in GB"
@@ -47,4 +47,9 @@ variable "volume_type" {
 variable "ec2_tag_name" {
   description = "Tag name for the EC2 instance"
   type        = string 
+}
+
+variable "user_data_path" {
+  description = "Path to the user data script file"
+  type        = string
 }

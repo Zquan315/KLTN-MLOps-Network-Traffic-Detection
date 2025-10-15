@@ -19,11 +19,11 @@ global:
 #             - localhost:9093
 
 scrape_configs:
-  - job_name: 'ids-node'
+  - job_name: 'ids-node'  
     metrics_path: /metrics
     scheme: http
     static_configs: 
-      - targets: ["alb-ids-1001117453.us-east-1.elb.amazonaws.com"]   # ALB IDS (HTTP 80 → 9100), thay đổi sau mỗi lần apply
+      - targets: ["alb-ids-1958094799.us-east-1.elb.amazonaws.com"]   # ALB IDS (HTTP 80 → 9100), thay đổi sau mỗi lần apply
         labels:
           app: "ids_node"
 YAML
@@ -35,7 +35,7 @@ services:
     container_name: prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
-      - --web.external-url=http://monitoring.qm.uit/prometheus
+      - --web.external-url=http://monitoring.qm.uit/
       - --web.route-prefix=/prometheus
     volumes:
       - /opt/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
