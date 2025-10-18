@@ -1,3 +1,11 @@
+terraform {
+  backend "s3" {
+    bucket         = "terraform-state-bucket-qm" 
+    key            = "create-infrastructure/terraform.tfstate"
+    region         = "us-east-1" 
+  }
+}
+
 # create VPC and subnets
 module "vpc_module" {
   source = "../modules/vpc_module"
@@ -28,14 +36,16 @@ module "route_table_module" {
   gateway_id_private             = module.nat_gateway_module.nat_gateway_id
   subnet_id_private              = [module.vpc_module.subnet_private_ids[0], 
                                     module.vpc_module.subnet_private_ids[1],
-                                    module.vpc_module.subnet_private_ids[2]]
+                                    module.vpc_module.subnet_private_ids[2],
+                                    module.vpc_module.subnet_private_ids[3]]
 
   # Route Table Public
   destination_cidr_block_public  = var.destination_cidr_block_public_value
   gateway_id_public              = module.vpc_module.internet_gateway_id
   subnet_id_public               = [module.vpc_module.subnet_public_ids[0], 
                                    module.vpc_module.subnet_public_ids[1],
-                                   module.vpc_module.subnet_public_ids[2]]
+                                   module.vpc_module.subnet_public_ids[2],
+                                   module.vpc_module.subnet_public_ids[3]]
 }
 
 # Create Security Groups
@@ -79,14 +89,6 @@ module "iam_module" {
 module "dynamodb_module" {
   source        = "../modules/dynamodb_module"
   table_name    = var.table_name_value 
-}
-
-terraform {
-  backend "s3" {
-    bucket         = "terraform-state-bucket-qm" 
-    key            = "create-infrastructure/terraform.tfstate"
-    region         = "us-east-1" 
-  }
 }
 
 

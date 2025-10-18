@@ -2,9 +2,9 @@ region_value  = "us-east-1"
 
 # VPC
 vpc_cidr_block_value         = "172.16.0.0/16"
-vpc_cidr_block_private_value = ["172.16.1.0/24", "172.16.2.0/24", "172.16.3.0/24"]
-vpc_cidr_block_public_value  = ["172.16.4.0/24", "172.16.5.0/24", "172.16.6.0/24"]
-vpc_subnet_count_value = 3
+vpc_cidr_block_private_value = ["172.16.1.0/24", "172.16.2.0/24", "172.16.3.0/24", "172.16.4.0/24"]
+vpc_cidr_block_public_value  = ["172.16.5.0/24", "172.16.6.0/24", "172.16.7.0/24", "172.16.8.0/24"]
+vpc_subnet_count_value = 4
 
 #route table
 destination_cidr_block_private_value = "0.0.0.0/0"
@@ -64,6 +64,13 @@ ingress_rules_public_value = [
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
     description = "Access to port 5001 from anywhere for ids"
+  },
+  {
+    from_port   = 5000
+    to_port     = 5000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Access to port 5000 from anywhere for ids"
   },
   {
     from_port   = 8080
