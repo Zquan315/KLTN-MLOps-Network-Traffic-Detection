@@ -33,7 +33,7 @@ module "alb_module_logs" {
 
   routes = [
     { name = "frontend", port = 8080, path_patterns = ["/"], health_path = "/", matcher = "200-399" },
-    { name = "backend", port = 8081, path_patterns = ["/api/*"], health_path = "/health", matcher = "200-399" }
+    { name = "backend", port = 8081, path_patterns = ["/api/*"], health_path = "/api/health", matcher = "200-399" }
   ]
   default_route_name = "frontend"
 }
