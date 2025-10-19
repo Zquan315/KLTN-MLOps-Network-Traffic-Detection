@@ -1,7 +1,7 @@
 # khởi tạo tfstate cho workspace khác
 terraform {
   backend "s3" {
-    bucket = "terraform-state-bucket-qm"
+    bucket = "terraform-state-bucket-9999"
     key    = "create-ids-system/terraform.tfstate"
     region = "us-east-1"
   }
@@ -11,7 +11,7 @@ terraform {
 data "terraform_remote_state" "infra" {
   backend = "s3"
   config = {
-    bucket = "terraform-state-bucket-qm"
+    bucket = "terraform-state-bucket-9999"
     key    = "create-infrastructure/terraform.tfstate"
     region = "us-east-1"
   }
@@ -20,7 +20,7 @@ data "terraform_remote_state" "infra" {
 data "terraform_remote_state" "honey_pot" {
   backend = "s3"
   config = {
-    bucket = "terraform-state-bucket-qm"
+    bucket = "terraform-state-bucket-9999"
     key    = "create-honey-pot-system/terraform.tfstate"
     region = "us-east-1"
   }

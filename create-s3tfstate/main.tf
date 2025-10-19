@@ -1,8 +1,8 @@
 resource "aws_s3_bucket" "terraform-state-bucket" {
-    bucket = "terraform-state-bucket-qm"
+    bucket = "terraform-state-bucket-9999"
     force_destroy = true
     tags = {
-        Name = "terraform-state-bucket-qm"
+        Name = "terraform-state-bucket-9999"
     }
 }
 

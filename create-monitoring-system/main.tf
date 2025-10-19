@@ -1,7 +1,7 @@
 # khởi tạo tfstate cho workspace khác
 terraform {
   backend "s3" {
-    bucket = "terraform-state-bucket-qm"
+    bucket = "terraform-state-bucket-2025"
     key    = "create-monitoring-system/terraform.tfstate"
     region = "us-east-1"
   }
@@ -11,7 +11,7 @@ terraform {
 data "terraform_remote_state" "infra" {
   backend = "s3"
   config = {
-    bucket = "terraform-state-bucket-qm"
+    bucket = "terraform-state-bucket-2025"
     key    = "create-infrastructure/terraform.tfstate"
     region = "us-east-1"
   }

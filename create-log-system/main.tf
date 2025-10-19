@@ -1,7 +1,7 @@
 # khởi tạo tfstate cho workspace khác
 terraform {
   backend "s3" {
-    bucket = "terraform-state-bucket-qm"
+    bucket = "terraform-state-bucket-9999"
     key    = "create-log-system/terraform.tfstate"
     region = "us-east-1"
   }
@@ -11,7 +11,7 @@ terraform {
 data "terraform_remote_state" "infra" {
   backend = "s3"
   config = {
-    bucket = "terraform-state-bucket-qm"
+    bucket = "terraform-state-bucket-9999"
     key    = "create-infrastructure/terraform.tfstate"
     region = "us-east-1"
   }
@@ -32,8 +32,8 @@ module "alb_module_logs" {
   http_port             = var.http_port_value
 
   routes = [
-    { name = "frontend", port = 8080, path_patterns = ["/"], health_path = "/", matcher = "200" },
-    { name = "backend", port = 8081, path_patterns = ["/api/*"], health_path = "/health", matcher = "200" }
+    { name = "frontend", port = 8080, path_patterns = ["/"], health_path = "/", matcher = "200-399" },
+    { name = "backend", port = 8081, path_patterns = ["/api/*"], health_path = "/health", matcher = "200-399" }
   ]
   default_route_name = "frontend"
 }
@@ -87,7 +87,7 @@ module "codeDeploy_module" {
   code_deploy_role_arn        = data.terraform_remote_state.infra.outputs.codeDeploy_role_arn
   deployment_option           = var.deployment_option_value
   autoscaling_groups          = [module.asg_module_logs.asg_name]
-  target_group_name           = [module.alb_module_logs.tg_names["frontend"], module.alb_module_logs.tg_names["backend"]]
+  target_group_name           = [module.alb_module_logs.tg_names["backend"]]
 }
 
 # Create CodeBuild project

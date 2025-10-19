@@ -1,9 +1,9 @@
 #!/bin/bash
 
-set -e
+set - e
 
 sudo apt update -y
-sudo apt install -y docker.io  docker-compose ruby-full wget curl
+sudo apt install -y docker.io docker-compose ruby-full wget curl build-essential
 sudo systemctl enable --now docker
 
 # Add user to docker group
@@ -18,23 +18,26 @@ sudo ./install auto || sudo ./install install
 if [ -f /etc/systemd/system/codedeploy-agent.service ]; then
   echo "CodeDeploy service file found."
 else
-  echo "Service file missing, creating manually..."
-  sudo bash -c 'cat > /etc/systemd/system/codedeploy-agent.service <<EOF
+  sudo chmod 755 /opt/codedeploy-agent/bin/codedeploy-agent
+  sudo tee /etc/systemd/system/codedeploy-agent.service > /dev/null <<EOF
 [Unit]
 Description=AWS CodeDeploy Agent
+Wants=network-online.target
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/codedeploy-agent start
-Restart=always
+ExecStart=/opt/codedeploy-agent/bin/codedeploy-agent start
 User=nobody
-Group=nobody
+Group=nogroup
+RestartSec=10
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
-EOF'
+EOF
 fi
 
+sudo systemctl daemon-reload
 sudo systemctl enable --now codedeploy-agent
 sudo systemctl start codedeploy-agent
 sudo systemctl status codedeploy-agent
