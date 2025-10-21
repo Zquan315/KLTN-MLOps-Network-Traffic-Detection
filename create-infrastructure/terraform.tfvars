@@ -73,6 +73,13 @@ ingress_rules_public_value = [
     description = "Access to port 5000 from anywhere for ids"
   },
   {
+    from_port   = 5500
+    to_port     = 5500
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Access to port 5500 from anywhere for honey pot"
+  },
+  {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"

@@ -32,7 +32,7 @@ module "alb_module_honey_pot" {
   http_port             = var.http_port_value
 
   routes = [
-    { name = "honey_pot",     port = 5000, path_patterns = ["/"],        health_path = "/",      matcher = "200" },
+    { name = "honey_pot",     port = 5500, path_patterns = ["/"],        health_path = "/",      matcher = "200" },
   ]
   default_route_name = "honey_pot"
 }
