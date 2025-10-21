@@ -12,20 +12,9 @@ aws --version
 terraform --version
 ```
 ## Hướng dẫn triển khai
-### 1. Tạo S3 Bucket và Secrets
-- **Thư mục:** `create-s3tfstate`
-- **Mục đích:** Tạo một S3 bucket để lưu trữ trạng thái Terraform (Terraform state) và quản lý các bí mật (secrets).
-- Di chuyển vào thư mục `create-s3tfstate`:
-``` bash
-cd create-s3tfstate
-```
-  - Chạy các lệnh Terraform:
-``` bash
-terraform init
-terraform plan
-terraform apply
-```
----
+### 1. Tạo S3 Bucket 
+- **Mục đích:** Tạo một S3 bucket để lưu trữ trạng thái Terraform (Terraform state)
+- Trên giao diện console, vào **S3**, tạo một bucket với tên **"terraform-state-bucket-9999** (tùy chỉnh, nếu tên khác thì vào các file **main.tf** chỉnh lại tên bucket). 
 ### 2. Tạo hạ tầng (VPC, Subnet, Security Group, API Instance)
 - **Thư mục:** `create-infrastructure`
 - **Mục đích:** Triển khai hạ tầng mạng, bao gồm VPC, subnet, security group, một API instance và một Elastic IP để IDS agent giao tiếp với API.
