@@ -46,7 +46,40 @@ terraform apply
 ---
 ### 4. Tạo hệ thống giám sát
 - **Thư mục:** `create-monitoring-system`
-- **Mục đích:** Thiết lập hệ thống giám sát sử dụng Prometheus và Grafana để thu thập và trực qulog-system
+- **Mục đích:** Thiết lập hệ thống giám sát sử dụng Prometheus và Grafana để thu thập và trực quan hóa các metrics từ IDS agent.
+- Di chuyển vào thư mục `create-monitoring-system`
+``` bash
+cd create-monitoring-system
+```
+- Vì hiện tại chỉ dùng AWS route53 để host tên miền tạm, nên cần chỉnh file `./script/monitoring.sh`
+- Cập nhật trường targets trong file ./script/monitoring.sh với địa chỉ Application Load Balancer (ALB) của hệ thống IDS. Ví dụ:
+``` yml
+scrape_configs:
+- job_name: 'ids-node'
+  metrics_path: /metrics
+  scheme: http
+  static_configs: 
+    - targets: ["alb-ids-1001117453.us-east-1.elb.amazonaws.com"]   # Cập nhật địa chỉ ALB sau mỗi lần apply
+      labels:
+        app: "ids_node"
+```
+- Chạy các lệnh Terraform:
+``` bash
+terraform init
+terraform plan
+terraform apply
+```
+- Truy cập hệ thống giám sát:
+  - Prometheus: Truy cập tại `http://monitoring.qm.uit/prometheus`. Kiểm tra trạng thái các target trong mục Target Health.
+  - Grafana: Truy cập tại `http://monitoring.qm.uit` với tài khoản mặc định admin/admin. Thêm **Data source**, chọn **Prometheus**, thêm đường dẫn `http://<alb-monitoring>/prometheus`. sau đó chọn `Save & Test`.
+  - Import dashboard với ID: **1860**, Data Source là `Prometheus` với thêm vào.
+---
+### 5. Triển khai hệ thống quản lý log
+- **Thư mục:** `create-log-system`
+- **Mục đích:** Triển khai ứng dụng web để truy xuất và quản lý log database mà IDS agent đẩy về.
+- Di chuyển vào thư mục `create-log-system`
+``` bash
+cd create-log-system
 ```
 - Chạy các lệnh Terraform:
 ``` bash
@@ -57,5 +90,5 @@ terraform apply
 - Vì hiện tại domain rote53 chỉ hoạt động ở local máy, vì thế cần dùng phương pháp add host.
   - Trên console của AWS, vào EC2, lướt xuống chọn **load balancer**.
   - Chọn **alb-logs**, copy DNS của nó và dùng **nslookup** để resovle ra ip public của nó.
-  - Mở file **.../etc/hosts** với quyền Admin trên windows, thêm **<IP_public>  <Tên domain>**, lưu lại.
+  - Mở file **.../etc/hosts** với quyền Admin trên windows, thêm **<IP public>  <Tên domain>**, lưu lại.
   - Truy cập web: http://<tên domain>/, sẽ xuất hiện giao diện web. Cụ thể hệ thống **http://logs.qm.uit/**
