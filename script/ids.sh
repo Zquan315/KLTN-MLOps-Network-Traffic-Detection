@@ -36,22 +36,28 @@ sudo systemctl start node_exporter
 set -euo pipefail
 
 echo "=============================================="
-echo "Installing and Starting IDS Agent"
+echo "Installing and Starting IDS Ingress Predict Agent"
 echo "=============================================="
 
+# ============================================================
 # Step 1. Update system and install dependencies
+# ============================================================
 echo "[+] Updating system and installing base packages..."
 sudo apt update -y
 sudo apt install -y python3 python3-pip python3-dev build-essential libpcap-dev git
 
+# ============================================================
 # Step 2. Install Python libraries
+# ============================================================
 echo "[+] Installing Python dependencies..."
 python3 -m pip install --upgrade pip
-pip install nfstream requests
+pip install flask flask-socketio requests pandas
 
+# ============================================================
 # Step 3. Clone or update repository
-REPO_URL="https://github.com/bqmxnh/ids-agent.git"
-TARGET_DIR="$HOME/ids-agent"
+# ============================================================
+REPO_URL="https://github.com/bqmxnh/ids-ingress-predict.git"
+TARGET_DIR="$HOME/ids-ingress-predict"
 
 echo "[+] Cloning repository from $REPO_URL..."
 if [ -d "$TARGET_DIR" ]; then
@@ -63,8 +69,12 @@ else
     cd "$TARGET_DIR"
 fi
 
-# Step 4. Run the main application
-echo "[+] Starting IDS Agent..."
-sudo python3 application.py
+# ============================================================
+# Step 4. Run the Flask-SocketIO server
+# ============================================================
+echo "[+] Starting IDS Ingress Predict Server..."
+sudo python3 application.py 
 
-echo "Setup complete. IDS Agent started successfully."
+echo "=============================================="
+echo "Setup complete. IDS Ingress Predict is running on port 5001"
+echo "=============================================="
