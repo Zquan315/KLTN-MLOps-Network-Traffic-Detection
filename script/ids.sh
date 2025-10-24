@@ -38,8 +38,9 @@ echo "[+] Installing dependencies..."
 sudo apt update -y
 sudo apt install -y python3 python3-pip python3-dev build-essential libpcap-dev git
 
-python3 -m pip install --upgrade pip
-pip install flask flask-socketio requests pandas boto3 eventlet gunicorn
+python3 -m pip install --upgrade pip --break-system-packages
+pip install flask flask-socketio requests pandas boto3 eventlet gunicorn --break-system-packages
+
 
 echo "[+] Cloning repository..."
 REPO_URL="https://github.com/bqmxnh/ids-ingress-predict.git"
