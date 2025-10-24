@@ -42,16 +42,18 @@ echo "=============================================="
 # ============================================================
 # Step 1. Update system and install dependencies
 # ============================================================
-echo "[+] Updating system and installing base packages..."
+echo "[1/5] Updating system and installing base packages..."
 sudo apt update -y
 sudo apt install -y python3 python3-pip python3-dev build-essential libpcap-dev git
 
 # ============================================================
-# Step 2. Install Python libraries
+# Step 2. Install Python libraries (with all requirements)
 # ============================================================
-echo "[+] Installing Python dependencies..."
+echo "[2/5] Installing Python dependencies..."
 python3 -m pip install --upgrade pip
-pip install flask flask-socketio requests pandas
+pip install flask flask-socketio requests pandas boto3 eventlet gunicorn
+
+echo "[✓] Python dependencies installed successfully."
 
 # ============================================================
 # Step 3. Clone or update repository
@@ -59,9 +61,9 @@ pip install flask flask-socketio requests pandas
 REPO_URL="https://github.com/bqmxnh/ids-ingress-predict.git"
 TARGET_DIR="$HOME/ids-ingress-predict"
 
-echo "[+] Cloning repository from $REPO_URL..."
+echo "[3/5] Cloning repository from $REPO_URL..."
 if [ -d "$TARGET_DIR" ]; then
-    echo "[!] Repository already exists, pulling latest changes..."
+    echo "[!] Repository already exists. Pulling latest changes..."
     cd "$TARGET_DIR"
     git pull
 else
@@ -70,10 +72,32 @@ else
 fi
 
 # ============================================================
-# Step 4. Run the Flask-SocketIO server
+# Step 4. Start Flask-SocketIO server with Eventlet
 # ============================================================
-echo "[+] Starting IDS Ingress Predict Server..."
-sudo python3 application.py 
+LOG_DIR="/var/log"
+LOG_FILE="$LOG_DIR/ids-agent.log"
+sudo mkdir -p "$LOG_DIR"
+sudo touch "$LOG_FILE"
+sudo chmod 666 "$LOG_FILE"
+
+echo "[4/5] Starting IDS Ingress Predict Server..."
+echo "[i] Logs will be written to $LOG_FILE"
+echo "[i] Service running on port 5001"
+
+# Run background with nohup
+nohup python3 application.py > "$LOG_FILE" 2>&1 &
+
+# ============================================================
+# Step 5. Verification & summary
+# ============================================================
+sleep 3
+if pgrep -f "application.py" >/dev/null; then
+    echo "[✓] IDS Ingress Predict Agent is running successfully!"
+    echo "[→] Check logs: tail -f $LOG_FILE"
+else
+    echo "[✗] Failed to start IDS agent. Check $LOG_FILE for details."
+    exit 1
+fi
 
 echo "=============================================="
 echo "Setup complete. IDS Ingress Predict is running on port 5001"
