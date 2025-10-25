@@ -51,3 +51,9 @@ variable "code_pipeline_policy_arn_list" {
   description = "ARN of the CodePipeline policy for the role"
   type        = list(string)
 }
+
+variable "table_name_value" {
+  description = "DynamoDB table name for IDS logs"
+  type        = string
+}
+

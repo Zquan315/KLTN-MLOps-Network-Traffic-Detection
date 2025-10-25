@@ -84,6 +84,7 @@ module "iam_module" {
   code_pipeline_policy_arn_list      = var.code_code_pipeline_policy_arn_list_value  
   # IAM User
   user_name                          = var.user_name_value
+  table_name_value                   = "ids_log_system"
 }
 
 module "dynamodb_module" {
@@ -104,4 +105,5 @@ module "ec2_module" {
   volume_size                 = "20"
   volume_type                 = "gp2"
   user_data_path = "../script/ec2_api.sh"
+  ec2_instance_profile_name = module.iam_module.instance_profile_name
 }

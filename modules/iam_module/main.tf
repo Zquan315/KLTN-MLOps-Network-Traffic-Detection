@@ -33,6 +33,34 @@ resource "aws_iam_policy_attachment" "ec2_role_policy_attachment_codedeploy" {
     policy_arn = var.ec2_code_deploy_policy_arn
 }
 
+# ============================================================
+# Allow EC2 to write logs to DynamoDB (IDS logs)
+# ============================================================
+data "aws_caller_identity" "current" {}
+
+resource "aws_iam_role_policy" "ec2_dynamodb_access" {
+  name = "EC2DynamoDBAccess"
+  role = aws_iam_role.ec2_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:Scan",
+          "dynamodb:DescribeTable"
+        ],
+        Resource = "arn:aws:dynamodb:us-east-1:${data.aws_caller_identity.current.account_id}:table/${var.table_name_value}"
+      }
+    ]
+  })
+}
+
+
+
 resource "aws_iam_instance_profile" "instance_profile" {
   name = "ec2_instance_profile"
   role = aws_iam_role.ec2_role.name
