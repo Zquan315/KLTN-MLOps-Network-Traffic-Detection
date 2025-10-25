@@ -1,7 +1,7 @@
 # ============================================================
 # DynamoDB Table for IDS Logging
 # ============================================================
-resource "aws_dynamodb_table" "ids_flow_logs" {
+resource "aws_dynamodb_table" "ids_log_system" {
   name         = var.table_name
   billing_mode = "PAY_PER_REQUEST"
 
@@ -32,10 +32,6 @@ resource "aws_dynamodb_table" "ids_flow_logs" {
     type = "S"
   }
 
-  attribute {
-    name = "features_json"
-    type = "S"
-  }
 
   # ----------------------------
   # GSI 1: query theo label
@@ -94,7 +90,7 @@ locals {
 
 resource "aws_dynamodb_table_item" "seed" {
   for_each   = { for s in local.sample_logs : s.flow_id => s }
-  table_name = aws_dynamodb_table.ids_flow_logs.name
+  table_name = aws_dynamodb_table.ids_log_system.name
   hash_key   = "flow_id"
   range_key  = "timestamp"
 
