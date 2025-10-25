@@ -17,14 +17,14 @@ data "terraform_remote_state" "infra" {
   }
 }
 
-data "terraform_remote_state" "honey_pot" {
-  backend = "s3"
-  config = {
-    bucket = "terraform-state-bucket-9999"
-    key    = "create-honey-pot-system/terraform.tfstate"
-    region = "us-east-1"
-  }
-}
+#data "terraform_remote_state" "honey_pot" {
+  #backend = "s3"
+  #config = {
+   # bucket = "terraform-state-bucket-9999"
+    #key    = "create-honey-pot-system/terraform.tfstate"
+    #region = "us-east-1"
+  #}
+#}
 
 # Create ALB and Target Groups 
 module "alb_module_ids" {
