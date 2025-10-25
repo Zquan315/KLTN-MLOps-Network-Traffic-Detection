@@ -100,7 +100,7 @@ resource "aws_dynamodb_table_item" "seed" {
 
   item = jsonencode({
     flow_id           = { S = each.value.flow_id }
-    timestamp         = { S = each.value.timestamp }
+    timestamp         = { N = tostring(each.value.timestamp) }
     content           = { S = each.value.content }
     label             = { S = each.value.label }
     features_json     = { S = each.value.features_json }
