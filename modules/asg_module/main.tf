@@ -22,7 +22,7 @@ resource "aws_launch_template" "launch_template" {
     }
   }
 
-  user_data = filebase64(var.user_data_path)
+  user_data = base64encode(templatefile(var.user_data_path, var.user_data_template_vars))
 
   tag_specifications {
     resource_type = "instance"

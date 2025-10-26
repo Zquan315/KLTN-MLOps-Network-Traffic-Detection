@@ -45,3 +45,13 @@ output "code_pipeline_role_arn" {
 output "dynamodb_table" {
   value = module.dynamodb_module.dynamodb_table_name
 }
+
+#SQS
+output "sqs_queue_arn" {
+  value = module.sqs_module.sqs_queue_arn
+}
+
+output "sqs_queue_url" {
+  description = "The URL of the SQS queue for alerts"
+  value       = module.sqs_module.queue_url
+}

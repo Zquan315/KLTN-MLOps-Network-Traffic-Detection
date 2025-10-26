@@ -7,15 +7,6 @@ terraform {
   }
 }
 
-# lấy data từ workspace ids
-data "terraform_remote_state" "ids" {
-  backend = "s3"
-  config = {
-    bucket = "terraform-state-bucket-9999"
-    key    = "create-ids-system/terraform.tfstate"
-    region = "us-east-1"
-  }
-}
 
 # Create ALB and Target Groups 
 module "alb_module_honey_pot" {

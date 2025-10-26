@@ -59,6 +59,26 @@ resource "aws_iam_role_policy" "ec2_dynamodb_access" {
   })
 }
 
+# ============================================================
+# Allow EC2 to send messages to SQS (Alerts)
+# ============================================================
+resource "aws_iam_role_policy" "ec2_sqs_access" {
+  name = "EC2SQSSendMessageAccess"
+  
+  role = aws_iam_role.ec2_role.name
+  count = var.sqs_queue_arn != "" ? 1 : 0
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = "sqs:SendMessage",
+        Resource = var.sqs_queue_arn 
+      }
+    ]
+  })
+}
 
 
 resource "aws_iam_instance_profile" "instance_profile" {

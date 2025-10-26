@@ -17,14 +17,14 @@ data "terraform_remote_state" "infra" {
   }
 }
 
-#data "terraform_remote_state" "honey_pot" {
-  #backend = "s3"
-  #config = {
-   # bucket = "terraform-state-bucket-9999"
-    #key    = "create-honey-pot-system/terraform.tfstate"
-    #region = "us-east-1"
-  #}
-#}
+# data "terraform_remote_state" "honey_pot" {
+#   backend = "s3"
+#   config = {
+#    bucket = "terraform-state-bucket-9999"
+#     key    = "create-honey-pot-system/terraform.tfstate"
+#     region = "us-east-1"
+#   }
+# }
 
 # Create ALB and Target Groups 
 module "alb_module_ids" {
@@ -65,6 +65,10 @@ module "asg_module_ids" {
 
   name_instance             = "ids_instance" 
   user_data_path            = var.user_data_path_value 
+  # user_data_template_vars = {
+  #   HONEYPOT_ALB_URL = "http://${data.terraform_remote_state.honey_pot.outputs.alb_dns_name}"
+  #   SQS_QUEUE_URL    = data.terraform_remote_state.infra.outputs.sqs_queue_url
+  # }
 
   subnet_ids                = [
     data.terraform_remote_state.infra.outputs.subnet_public_ids[0],
@@ -75,6 +79,7 @@ module "asg_module_ids" {
     module.alb_module_ids.tg_arns["web"],
     module.alb_module_ids.tg_arns["metrics"]
   ]  
+
 }
 
 module "route53_module_ids" {

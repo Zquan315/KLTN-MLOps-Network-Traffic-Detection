@@ -61,6 +61,7 @@ cd /home/ubuntu/ids-ingress-predict
 chown -R ubuntu:ubuntu /home/ubuntu/ids-ingress-predict
 
 echo "[+] Starting IDS Agent..."
+#sudo HONEYPOT_ALB_URL="${HONEYPOT_ALB_URL}" SQS_QUEUE_URL="${SQS_QUEUE_URL}" python3 application.py
 nohup python3 application.py >/dev/null 2>&1 &
 sleep 3
 

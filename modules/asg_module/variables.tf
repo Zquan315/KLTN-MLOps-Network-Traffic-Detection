@@ -49,6 +49,12 @@ variable "user_data_path" {
   type        = string
 }
 
+variable "user_data_template_vars" {
+  description = "Variables for user data template"
+  type        = map(any)
+  default     = {} 
+}
+
 variable "desired_capacity" {
   description = "The desired number of instances in the ASG."
   type        = number

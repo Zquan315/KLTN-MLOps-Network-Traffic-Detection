@@ -57,3 +57,10 @@ variable "table_name_value" {
   type        = string
 }
 
+# sqs
+
+variable "sqs_queue_arn" {
+  description = "ARN của SQS queue dùng cho cảnh báo"
+  type        = string
+  default     = "" 
+}

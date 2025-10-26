@@ -125,3 +125,12 @@ code_code_pipeline_policy_arn_list_value = [
 
 # dynamodb
 table_name_value = "ids_log_system"
+
+# sqs
+sqs_queue_name_value = "ids-attack-alert-redirect-queue"
+
+# # lambda
+# lambda_function_name_value = "ids-attack-alert-lambda-function"
+# lambda_source_file_path_value = "../lambda_code/lambda_function.py"
+# sender_email_value = "tocongquan315@gmail.com"
+# to_email_value = "tocongquan315@gmail.com"

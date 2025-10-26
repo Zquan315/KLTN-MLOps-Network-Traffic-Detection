@@ -81,7 +81,8 @@ module "iam_module" {
   codebuild_role_name                = var.codebuild_role_name_value
   code_build_dev_access_policy_arn   = var.code_build_dev_access_policy_arn_value
   code_pipeline_role_name            = var.code_pipeline_role_name_value
-  code_pipeline_policy_arn_list      = var.code_code_pipeline_policy_arn_list_value  
+  code_pipeline_policy_arn_list      = var.code_code_pipeline_policy_arn_list_value
+  sqs_queue_arn = module.sqs_module.queue_arn
   # IAM User
   user_name                          = var.user_name_value
   table_name_value                   = "ids_log_system"
@@ -92,6 +93,19 @@ module "dynamodb_module" {
   table_name    = var.table_name_value 
 }
 
+module "sqs_module" {
+  source             = "../modules/sqs_module"
+  sqs_queue_name     = var.sqs_queue_name_value
+}
+
+# module "lambda_module" {
+#   source = "../modules/lambda_module"
+#   function_name     = var.lambda_function_name_value
+#   source_file_path  = var.lambda_source_file_path_value
+#   sqs_queue_arn     = module.sqs_module.sqs_queue_arn
+#   sender_email      = var.sender_email_value
+#   to_email          = var.to_email_value
+# }
 
 module "ec2_module" {
   source = "../modules/ec2_module"

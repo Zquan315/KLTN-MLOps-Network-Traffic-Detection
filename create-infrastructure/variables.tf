@@ -134,3 +134,30 @@ variable "table_name_value" {
   description = "Name of table"
   type        = string
 }
+
+# variables for sqs
+variable "sqs_queue_name_value" {
+  description = "The name of the SQS queue to create."
+  type        = string
+}
+
+# # variables for lambda
+# variable "lambda_function_name_value" {
+#   description = "The name of the Lambda function."
+#   type        = string
+# }
+
+# variable "lambda_source_file_path_value" {
+#   description = "The file path to the Lambda function source code."
+#   type        = string
+# }
+
+# variable "sender_email_value" {
+#   description = "The email address used as the sender in SES."
+#   type        = string
+# }
+
+# variable "to_email_value" {
+#   description = "The recipient email address."
+#   type        = string
+# }
