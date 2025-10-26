@@ -58,16 +58,16 @@ resource "aws_autoscaling_group" "asg" {
 
 
 
-# # test alarms for scaling policies
-# resource "aws_sns_topic" "cloudwatch_alarms_topic" {
-#   name = "cloudwatch_alarms_topic"
-# }
-# # Tạo Subscription cho email
-# resource "aws_sns_topic_subscription" "email_subscription" {
-#   topic_arn = aws_sns_topic.cloudwatch_alarms_topic.arn
-#   protocol  = "email"
-#   endpoint  = "tocongquan315@gmail.com"
-# }
+# test alarms for scaling policies
+resource "aws_sns_topic" "cloudwatch_alarms_topic" {
+  name = "cloudwatch_alarms_topic"
+}
+# Tạo Subscription cho email
+resource "aws_sns_topic_subscription" "email_subscription" {
+  topic_arn = aws_sns_topic.cloudwatch_alarms_topic.arn
+  protocol  = "email"
+  endpoint  = "tocongquan315@gmail.com"
+}
 
 resource "aws_autoscaling_policy" "scale_out_policy" {
   name                   = "scale_out_policy"
