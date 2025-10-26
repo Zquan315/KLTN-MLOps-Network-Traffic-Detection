@@ -43,8 +43,8 @@ apt install -y python3 python3-pip python3-dev python3-numpy python3-pandas \
 
 python3 -m pip install -U pip setuptools wheel || true
 python3 -m pip install flask flask-socketio flask-cors werkzeug==3.0.3 \
-                        requests boto3 eventlet gunicorn gevent gevent-websocket simplejson \
-                        --ignore-installed blinker -q --no-input || true
+                        requests httpx boto3 eventlet gunicorn gevent gevent-websocket \
+                        simplejson jinja2 --ignore-installed blinker -q --no-input || true
 
 # ----------------------------------------------------------
 # 3. Clone & run IDS Agent
