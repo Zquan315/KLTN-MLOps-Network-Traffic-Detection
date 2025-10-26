@@ -17,7 +17,7 @@ terraform --version
 - **Mục đích:** Tạo một S3 bucket để lưu trữ trạng thái Terraform (Terraform state)
 - Trên giao diện console, vào **S3**, tạo một bucket với tên **"terraform-state-bucket-9999** (tùy chỉnh, nếu tên khác thì vào các file **main.tf** chỉnh lại tên bucket).
 ---
-#### 1.2. Tạo S3 Bucket 
+#### 1.2. Tạo Identities (Email) 
 - **Mục đích:** IDS có thể gửi cảnh báo khi chuyển traffic tấn công qua honeypot
 - Trên giao diện console, vào **Simple Email Service (SES)**, tab **configuration** chọn **Identities**. Tiếp đó tạo một **Identities**, nhập email muốn gửi và nhận và xác thực.
 ---
