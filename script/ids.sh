@@ -38,11 +38,13 @@ echo "[✓] Node Exporter running on port :9100"
 # ----------------------------------------------------------
 echo "[+] Installing Python dependencies..."
 apt update -y
-apt install -y python3 python3-pip python3-dev python3-numpy python3-pandas build-essential libpcap-dev git
+apt install -y python3 python3-pip python3-dev python3-numpy python3-pandas \
+               build-essential libpcap-dev git unzip curl pkg-config libssl-dev net-tools htop lsof
 
 python3 -m pip install -U pip setuptools wheel || true
-python3 -m pip install flask flask-socketio requests boto3 eventlet gunicorn \
-  --ignore-installed blinker -q --no-input || true
+python3 -m pip install flask flask-socketio flask-cors werkzeug==3.0.3 \
+                        requests boto3 eventlet gunicorn gevent gevent-websocket simplejson \
+                        --ignore-installed blinker -q --no-input || true
 
 # ----------------------------------------------------------
 # 3. Clone & run IDS Agent
