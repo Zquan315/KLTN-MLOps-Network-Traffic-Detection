@@ -1,4 +1,4 @@
-# Dưới đây là nhưng lưu ý. Vì tui đã thêm code cho test về redirect to honey pot. Nên có tạo mưới code, tuy nhiên chưa test chắc chắn nên sẽ command lạim một số phần.
+# Dưới đây là nhưng lưu ý. Vì tui đã thêm code cho test về redirect to honey pot. Nên có tạo mới code, tuy nhiên chưa test chắc chắn nên sẽ command lại một số phần.
 
 - Các command trong infrastructure
 - Các command trong ids-agent-system
