@@ -71,7 +71,6 @@ terraform apply
 ``` bash
 cd create-monitoring-system
 ```
-- Vì hiện tại chỉ dùng AWS route53 để host tên miền tạm, nên cần chỉnh file `./script/monitoring.sh`
 - Chạy các lệnh Terraform:
 ``` bash
 terraform init

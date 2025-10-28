@@ -55,3 +55,7 @@ output "sqs_queue_url" {
   description = "The URL of the SQS queue for alerts"
   value       = module.sqs_module.queue_url
 }
+
+output "ec2_api_public_ip" {
+  value = module.ec2_module.eip_allocate_ec2_api
+}

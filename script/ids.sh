@@ -57,12 +57,14 @@ else
   cd ids-ingress-predict && git pull && cd ..
 fi
 
+mkdir -p /home/ubuntu/logs
+chown ubuntu:ubuntu /home/ubuntu/logs
 cd /home/ubuntu/ids-ingress-predict
 chown -R ubuntu:ubuntu /home/ubuntu/ids-ingress-predict
 
 echo "[+] Starting IDS Agent..."
-
-nohup python3 application.py >/dev/null 2>&1 &
+export EC2_API_IP="${EC2_API_IP}"
+sudo -E -u ubuntu nohup python3 application.py > /home/ubuntu/logs/ids_agent.log 2>&1 &
 sleep 3
 
 if pgrep -f "application.py" >/dev/null; then
