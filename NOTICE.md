@@ -3,6 +3,9 @@
 - Các command trong infrastructure
 - Các command trong ids-agent-system
 - script mới bằng cách thay 65 bằng 64 (đang command) trong ids.sh
+``` bash
+    #sudo HONEYPOT_ALB_URL="${HONEYPOT_ALB_URL}" SQS_QUEUE_URL="${SQS_QUEUE_URL}" python3 application.py
+```
 - Cập nhật Logic application.py từ repo ids-ingress-predict.git như sau (Chưa thay đổi code trên github)
 
 ``` python

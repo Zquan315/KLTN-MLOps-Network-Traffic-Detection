@@ -1,7 +1,7 @@
 # khởi tạo tfstate cho workspace khác
 terraform {
   backend "s3" {
-    bucket = "terraform-state-bucket-2025"
+    bucket = "terraform-state-bucket-9999"
     key    = "create-monitoring-system/terraform.tfstate"
     region = "us-east-1"
   }
@@ -11,8 +11,17 @@ terraform {
 data "terraform_remote_state" "infra" {
   backend = "s3"
   config = {
-    bucket = "terraform-state-bucket-2025"
+    bucket = "terraform-state-bucket-9999"
     key    = "create-infrastructure/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+# lấy data từ workspace ids
+data "terraform_remote_state" "ids" {
+  backend = "s3"
+  config = {
+    bucket = "terraform-state-bucket-9999"
+    key    = "create-ids-system/terraform.tfstate"
     region = "us-east-1"
   }
 }
@@ -55,7 +64,10 @@ module "asg_module_monitoring" {
   max_size                  = var.max_size_value
 
   name_instance             = "monitoring_instance" 
-  user_data_path            = var.user_data_path_value 
+  user_data_path            = var.user_data_path_value
+  user_data_template_vars = {
+    ALB_DNS_IDS    = data.terraform_remote_state.ids.outputs.alb_dns_name
+  }
 
   subnet_ids                = [
     data.terraform_remote_state.infra.outputs.subnet_public_ids[1],

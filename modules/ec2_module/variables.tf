@@ -53,3 +53,8 @@ variable "user_data_path" {
   description = "Path to the user data script file"
   type        = string
 }
+variable "user_data_template_vars" {
+  description = "Template variables for user data script"
+  type        = map(string)
+  default     = {}
+}

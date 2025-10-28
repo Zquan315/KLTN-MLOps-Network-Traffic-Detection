@@ -72,17 +72,6 @@ terraform apply
 cd create-monitoring-system
 ```
 - Vì hiện tại chỉ dùng AWS route53 để host tên miền tạm, nên cần chỉnh file `./script/monitoring.sh`
-- Cập nhật trường targets trong file ./script/monitoring.sh với địa chỉ Application Load Balancer (ALB) của hệ thống IDS. Ví dụ:
-``` yml
-scrape_configs:
-- job_name: 'ids-node'
-  metrics_path: /metrics
-  scheme: http
-  static_configs: 
-    - targets: ["alb-ids-1001117453.us-east-1.elb.amazonaws.com"]   # Cập nhật địa chỉ ALB sau mỗi lần apply
-      labels:
-        app: "ids_node"
-```
 - Chạy các lệnh Terraform:
 ``` bash
 terraform init

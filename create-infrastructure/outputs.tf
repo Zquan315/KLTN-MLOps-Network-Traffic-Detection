@@ -48,7 +48,7 @@ output "dynamodb_table" {
 
 #SQS
 output "sqs_queue_arn" {
-  value = module.sqs_module.sqs_queue_arn
+  value = module.sqs_module.queue_arn
 }
 
 output "sqs_queue_url" {

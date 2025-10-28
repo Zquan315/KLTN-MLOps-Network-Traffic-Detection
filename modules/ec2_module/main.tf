@@ -10,7 +10,7 @@ resource "aws_instance" "ec2_public" {
   tags = {
     Name = var.ec2_tag_name
   }
-  user_data = filebase64(var.user_data_path)
+  user_data = base64encode(templatefile(var.user_data_path, var.user_data_template_vars))
   iam_instance_profile = var.ec2_instance_profile_name
   root_block_device {
     volume_size = var.volume_size

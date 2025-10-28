@@ -66,7 +66,7 @@ resource "aws_iam_role_policy" "ec2_sqs_access" {
   name = "EC2SQSSendMessageAccess"
   
   role = aws_iam_role.ec2_role.name
-  count = var.sqs_queue_arn != "" ? 1 : 0
+  count = var.count_value //var.sqs_queue_arn == null ? 0 : 1
 
   policy = jsonencode({
     Version = "2012-10-17"

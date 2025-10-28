@@ -23,7 +23,7 @@ scrape_configs:
     metrics_path: /metrics
     scheme: http
     static_configs: 
-      - targets: ["alb-ids-1958094799.us-east-1.elb.amazonaws.com"]   # ALB IDS (HTTP 80 → 9100), thay đổi sau mỗi lần apply
+      - targets: ["${ALB_DNS_IDS}"] 
         labels:
           app: "ids_node"
 YAML

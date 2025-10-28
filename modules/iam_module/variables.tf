@@ -62,5 +62,10 @@ variable "table_name_value" {
 variable "sqs_queue_arn" {
   description = "ARN của SQS queue dùng cho cảnh báo"
   type        = string
-  default     = "" 
+}
+
+variable "count_value" {
+  description = "Số lượng để tạo policy SQS (0 hoặc 1)"
+  type        = number
+  default     = 1
 }
