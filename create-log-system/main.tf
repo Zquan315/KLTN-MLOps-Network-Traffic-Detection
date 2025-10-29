@@ -33,7 +33,8 @@ module "alb_module_logs" {
 
   routes = [
     { name = "frontend", port = 8080, path_patterns = ["/"], health_path = "/", matcher = "200-399" },
-    { name = "backend", port = 8081, path_patterns = ["/api/*"], health_path = "/api/health", matcher = "200-399" }
+    { name = "backend", port = 8081, path_patterns = ["/api/*"], health_path = "/api/health", matcher = "200-399" },
+    { name = "metrics-log", port = 9100, path_patterns = ["/metrics"], health_path = "/metrics", matcher = "200"}
   ]
   default_route_name = "frontend"
 }
@@ -64,7 +65,8 @@ module "asg_module_logs" {
 
   target_group_arns = [
     module.alb_module_logs.tg_arns["frontend"],
-    module.alb_module_logs.tg_arns["backend"]
+    module.alb_module_logs.tg_arns["backend"],
+    module.alb_module_logs.tg_arns["metrics-log"]
   ]  
 }
 

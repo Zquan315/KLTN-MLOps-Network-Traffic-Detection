@@ -42,7 +42,7 @@ module "alb_module_ids" {
 
   routes = [
     { name = "web",     port = 5001, path_patterns = ["/"],        health_path = "/",      matcher = "200" },
-    { name = "metrics", port = 9100, path_patterns = ["/metrics"], health_path = "/metrics", matcher = "200-399" }
+    { name = "metrics-ids", port = 9100, path_patterns = ["/metrics"], health_path = "/metrics", matcher = "200-399" }
   ]
   default_route_name = "web"
 }
@@ -78,7 +78,7 @@ module "asg_module_ids" {
 
   target_group_arns = [
     module.alb_module_ids.tg_arns["web"],
-    module.alb_module_ids.tg_arns["metrics"]
+    module.alb_module_ids.tg_arns["metrics-ids"]
   ]  
 
 }

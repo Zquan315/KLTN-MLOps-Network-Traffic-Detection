@@ -24,6 +24,7 @@ module "alb_module_honey_pot" {
 
   routes = [
     { name = "honey_pot",     port = 5500, path_patterns = ["/"],        health_path = "/",      matcher = "200" },
+    { name = "metrics-honeypot", port = 9100, path_patterns = ["/metrics"], health_path = "/metrics", matcher = "200" }
   ]
   default_route_name = "honey_pot"
 }
@@ -53,6 +54,7 @@ module "asg_module_honey_pot" {
   ]
 
   target_group_arns = [
-    module.alb_module_ids.tg_arns["honey_pot"]
+    module.alb_module_honey_pot.tg_arns["honey_pot"],
+    module.alb_module_honey_pot.tg_arns["metrics-honeypot"]
   ]  
 }

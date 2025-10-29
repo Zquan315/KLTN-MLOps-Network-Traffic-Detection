@@ -1,5 +1,33 @@
 #!/bin/bash
 
+# ----------------------------------------------------------
+#  Node Exporter
+# ----------------------------------------------------------
+echo "[+] Installing Node Exporter..."
+cd /tmp
+wget -q https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz
+tar xzf node_exporter-1.8.2.linux-amd64.tar.gz
+cp node_exporter-1.8.2.linux-amd64/node_exporter /usr/local/bin/
+useradd -rs /bin/false node_exporter || true
+
+cat <<EOF >/etc/systemd/system/node_exporter.service
+[Unit]
+Description=Node Exporter
+After=network-online.target
+[Service]
+User=node_exporter
+ExecStart=/usr/local/bin/node_exporter --web.listen-address=:9100
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable --now node_exporter
+echo "[✓] Node Exporter running on port :9100"
+# ----------------------------------------------------------
+
+
 sudo apt update -y
 sudo apt install -y docker.io  docker-compose
 sudo systemctl enable --now docker
@@ -26,6 +54,30 @@ scrape_configs:
       - targets: ["${ALB_DNS_IDS}"] 
         labels:
           app: "ids_node"
+
+  - job_name: 'ec2-api'  
+    metrics_path: /metrics
+    scheme: http
+    static_configs: 
+      - targets: ["${EC2_API_IP}:9100"] 
+        labels:
+          app: "ec2_api"
+
+  - job_name: 'log-system'  
+    metrics_path: /metrics
+    scheme: http
+    static_configs: 
+      - targets: ["${ALB_DNS_LOG}"] 
+        labels:
+          app: "log_system"
+
+  - job_name: 'monitoring-system'  
+    metrics_path: /metrics
+    scheme: http
+    static_configs: 
+      - targets: ["${ALB_DNS_MONITOR}"] 
+        labels:
+          app: "monitoring_system"
 YAML
 
 sudo cat > /opt/monitoring/docker-compose.yml <<'YAML'

@@ -1,6 +1,34 @@
 #!/bin/bash
 set -euo pipefail
 
+
+# ----------------------------------------------------------
+# Node Exporter
+# ----------------------------------------------------------
+echo "[+] Installing Node Exporter..."
+cd /tmp
+wget -q https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz
+tar xzf node_exporter-1.8.2.linux-amd64.tar.gz
+cp node_exporter-1.8.2.linux-amd64/node_exporter /usr/local/bin/
+useradd -rs /bin/false node_exporter || true
+
+cat <<EOF >/etc/systemd/system/node_exporter.service
+[Unit]
+Description=Node Exporter
+After=network-online.target
+[Service]
+User=node_exporter
+ExecStart=/usr/local/bin/node_exporter --web.listen-address=:9100
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable --now node_exporter
+echo "[✓] Node Exporter running on port :9100"
+# ----------------------------------------------------------
+
 # Cài đặt Python và Flask
 sudo apt-get update -y
 sudo apt-get install -y python3-pip

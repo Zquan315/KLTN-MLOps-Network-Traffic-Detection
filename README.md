@@ -64,7 +64,7 @@ terraform plan
 terraform apply
 ```
 ---
-### 5. Tạo hệ thống giám sát
+### 5. Tạo hệ thống giám sát (Khởi chạy sau cùng để monitor tất cả hệ thống)
 - **Thư mục:** `create-monitoring-system`
 - **Mục đích:** Thiết lập hệ thống giám sát sử dụng Prometheus và Grafana để thu thập và trực quan hóa các metrics từ IDS agent.
 - Di chuyển vào thư mục `create-monitoring-system`

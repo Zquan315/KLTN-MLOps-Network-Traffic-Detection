@@ -26,6 +26,26 @@ data "terraform_remote_state" "ids" {
   }
 }
 
+# # lấy data từ workspace honey_pot
+# data "terraform_remote_state" "honey_pot" {
+#   backend = "s3"
+#   config = {
+#    bucket = "terraform-state-bucket-9999"
+#     key    = "create-honey-pot-system/terraform.tfstate"
+#     region = "us-east-1"
+#   }
+# }
+
+# Lấy data từ log workspace
+data "terraform_remote_state" "logs" {
+  backend = "s3"
+  config = {
+    bucket = "terraform-state-bucket-9999"
+    key    = "create-log-system/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+
 # Create ALB and Target Groups 
 module "alb_module_monitoring" {
   source = "../modules/alb_module"
@@ -42,7 +62,8 @@ module "alb_module_monitoring" {
 
   routes = [
     { name = "prometheus", port = 9090, path_patterns = ["/prometheus", "/prometheus/*"], health_path = "/prometheus/-/ready", matcher = "200-399" },
-    { name = "grafana", port = 3000, path_patterns = ["/"], health_path = "/", matcher = "200" }
+    { name = "grafana", port = 3000, path_patterns = ["/"], health_path = "/", matcher = "200" },
+    { name = "metrics-monitor", port = 9100, path_patterns = ["/metrics"], health_path = "/metrics", matcher = "200" }
   ]
   default_route_name = "grafana"
 }
@@ -67,6 +88,10 @@ module "asg_module_monitoring" {
   user_data_path            = var.user_data_path_value
   user_data_template_vars = {
     ALB_DNS_IDS    = data.terraform_remote_state.ids.outputs.alb_dns_name
+    EC2_API_IP     = data.terraform_remote_state.infra.outputs.ec2_api_public_ip
+    #ALB_DNS_HONEYPOT = data.terraform_remote_state.honey_pot.outputs.alb_dns_name
+    ALB_DNS_LOG      = data.terraform_remote_state.logs.outputs.alb_dns_name
+    ALB_DNS_MONITOR  = module.alb_module_monitoring.alb_dns_name
   }
 
   subnet_ids                = [
@@ -76,7 +101,8 @@ module "asg_module_monitoring" {
 
   target_group_arns = [
     module.alb_module_monitoring.tg_arns["grafana"],
-    module.alb_module_monitoring.tg_arns["prometheus"]
+    module.alb_module_monitoring.tg_arns["prometheus"],
+    module.alb_module_monitoring.tg_arns["metrics-monitor"]
   ]  
 }
 
