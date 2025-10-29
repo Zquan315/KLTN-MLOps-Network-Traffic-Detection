@@ -66,7 +66,7 @@ module "asg_module_ids" {
   name_instance             = "ids_instance" 
   user_data_path            = var.user_data_path_value 
   user_data_template_vars = {
-    EC2_API_IP        = data.terraform_remote_state.infra.outputs.ec2_api_public_ip
+    #EC2_API_IP        = data.terraform_remote_state.infra.outputs.ec2_api_public_ip
     # HONEYPOT_ALB_URL = "http://${data.terraform_remote_state.honey_pot.outputs.alb_dns_name}"
     # SQS_QUEUE_URL    = data.terraform_remote_state.infra.outputs.sqs_queue_url
   }

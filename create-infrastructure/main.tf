@@ -109,17 +109,17 @@ module "dynamodb_module" {
 #   to_email          = var.to_email_value
 # }
 
-module "ec2_module" {
-  source = "../modules/ec2_module"
-  associate_public_ip_address = true
-  ami_id                      = "ami-0f9de6e2d2f067fca" # ubuntu
-  instance_type               = "t3.medium"
-  subnet_id_public            = module.vpc_module.subnet_public_ids[0]
-  security_group_id_public    = [module.security_group_module.security_group_public_id]
-  key_name                    = "KLTN"
-  ec2_tag_name                = "instance-api"
-  volume_size                 = "20"
-  volume_type                 = "gp2"
-  user_data_path = "../script/ec2_api.sh"
-  ec2_instance_profile_name = module.iam_module.instance_profile_name
-}
+# module "ec2_module" {
+#   source = "../modules/ec2_module"
+#   associate_public_ip_address = true
+#   ami_id                      = "ami-0f9de6e2d2f067fca" # ubuntu
+#   instance_type               = "t3.medium"
+#   subnet_id_public            = module.vpc_module.subnet_public_ids[0]
+#   security_group_id_public    = [module.security_group_module.security_group_public_id]
+#   key_name                    = "KLTN"
+#   ec2_tag_name                = "instance-api"
+#   volume_size                 = "20"
+#   volume_type                 = "gp2"
+#   user_data_path = "../script/ec2_api.sh"
+#   ec2_instance_profile_name = module.iam_module.instance_profile_name
+# }

@@ -88,7 +88,7 @@ module "asg_module_monitoring" {
   user_data_path            = var.user_data_path_value
   user_data_template_vars = {
     ALB_DNS_IDS    = data.terraform_remote_state.ids.outputs.alb_dns_name
-    EC2_API_IP     = data.terraform_remote_state.infra.outputs.ec2_api_public_ip
+    #EC2_API_IP     = data.terraform_remote_state.infra.outputs.ec2_api_public_ip
     #ALB_DNS_HONEYPOT = data.terraform_remote_state.honey_pot.outputs.alb_dns_name
     ALB_DNS_LOG      = data.terraform_remote_state.logs.outputs.alb_dns_name
     ALB_DNS_MONITOR  = module.alb_module_monitoring.alb_dns_name

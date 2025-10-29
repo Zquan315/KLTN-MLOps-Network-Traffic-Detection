@@ -55,14 +55,6 @@ scrape_configs:
         labels:
           app: "ids_node"
 
-  - job_name: 'ec2-api'  
-    metrics_path: /metrics
-    scheme: http
-    static_configs: 
-      - targets: ["${EC2_API_IP}:9100"] 
-        labels:
-          app: "ec2_api"
-
   - job_name: 'log-system'  
     metrics_path: /metrics
     scheme: http

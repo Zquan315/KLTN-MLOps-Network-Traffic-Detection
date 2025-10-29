@@ -63,7 +63,6 @@ cd /home/ubuntu/ids-ingress-predict
 chown -R ubuntu:ubuntu /home/ubuntu/ids-ingress-predict
 
 echo "[+] Starting IDS Agent..."
-export EC2_API_IP="${EC2_API_IP}"
 sudo -E -u ubuntu nohup python3 application.py > /home/ubuntu/logs/ids_agent.log 2>&1 &
 sleep 3
 
