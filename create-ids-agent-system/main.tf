@@ -26,6 +26,17 @@ data "terraform_remote_state" "infra" {
 #   }
 # }
 
+# lấy output từ workspace API
+data "terraform_remote_state" "api_system" {
+  backend = "s3"
+  config = {
+    bucket = "terraform-state-bucket-9999"
+    key    = "create-api-system/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+
+
 # Create ALB and Target Groups 
 module "alb_module_ids" {
   source = "../modules/alb_module"
@@ -69,6 +80,7 @@ module "asg_module_ids" {
     #EC2_API_IP        = data.terraform_remote_state.infra.outputs.ec2_api_public_ip
     # HONEYPOT_ALB_URL = "http://${data.terraform_remote_state.honey_pot.outputs.alb_dns_name}"
     # SQS_QUEUE_URL    = data.terraform_remote_state.infra.outputs.sqs_queue_url
+    MODEL_API_URL = "http://${data.terraform_remote_state.api_system.outputs.api_service_hostname}/predict"
   }
 
   subnet_ids                = [

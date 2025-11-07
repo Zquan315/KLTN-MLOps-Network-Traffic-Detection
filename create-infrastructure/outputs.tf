@@ -59,3 +59,15 @@ output "sqs_queue_url" {
 # output "ec2_api_public_ip" {
 #   value = module.ec2_module.eip_allocate_ec2_api
 # }
+
+
+
+output "eks_cluster_role_arn" {
+  description = "IAM role ARN for EKS control plane"
+  value       = module.iam_module.eks_cluster_role_arn
+}
+
+output "eks_node_role_arn" {
+  description = "IAM role ARN for EKS node group"
+  value       = module.iam_module.eks_node_role_arn
+}
