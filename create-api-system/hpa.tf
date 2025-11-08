@@ -1,7 +1,7 @@
 resource "kubernetes_horizontal_pod_autoscaler_v2" "arf_ids_api_hpa" {
   metadata {
     name      = "arf-ids-api-hpa"
-    namespace = "default" 
+    namespace = "default"
   }
 
   spec {
@@ -29,6 +29,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "arf_ids_api_hpa" {
   }
 
   depends_on = [
-    kubernetes_deployment.arf_ids_api
+    kubernetes_deployment.arf_ids_api,
+    kubernetes_service.arf_ids_api
   ]
 }

@@ -64,22 +64,20 @@ resource "aws_iam_role_policy" "ec2_dynamodb_access" {
 # ============================================================
 resource "aws_iam_role_policy" "ec2_sqs_access" {
   name = "EC2SQSSendMessageAccess"
-  
   role = aws_iam_role.ec2_role.name
-  count = var.sqs_queue_arn == null ? 0 : var.count_value
-
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      {
-        Effect   = "Allow",
-        Action   = "sqs:SendMessage",
-        Resource = var.sqs_queue_arn 
+      for arn in (var.sqs_queue_arn != null ? [var.sqs_queue_arn] : []) : {
+        Effect   = "Allow"
+        Action   = "sqs:SendMessage"
+        Resource = arn
       }
     ]
   })
 }
+
 
 
 resource "aws_iam_instance_profile" "instance_profile" {
@@ -319,3 +317,4 @@ resource "aws_iam_role_policy_attachment" "eks_node_CloudWatchAgentServerPolicy"
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
   role       = aws_iam_role.eks_node_role.name
 }
+

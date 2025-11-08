@@ -19,4 +19,7 @@ resource "kubernetes_service" "arf_ids_api" {
 
     type = "LoadBalancer"
   }
+  depends_on = [
+    kubernetes_deployment.arf_ids_api
+  ]
 }

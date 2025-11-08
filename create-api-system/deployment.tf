@@ -26,7 +26,7 @@ resource "kubernetes_deployment" "arf_ids_api" {
       spec {
         container {
           name              = "arf-ids-api"
-          image             = "bqmxnh/arf-ids-mlops:latest"
+          image             = "bqmxnh/arf-ids-api:latest"
           image_pull_policy = "Always"
 
           port {
@@ -53,10 +53,10 @@ resource "kubernetes_deployment" "arf_ids_api" {
     }
   }
 
-  # Đảm bảo cluster + access entry đã sẵn sàng
+  # Đảm bảo EKS đã tạo xong trước khi apply Deployment
   depends_on = [
     module.eks,
-    aws_eks_access_entry.cluster_admin_access,
-    aws_eks_access_policy_association.cluster_admin_policy
+    aws_eks_access_entry.admins,
+    aws_eks_access_policy_association.admins
   ]
 }

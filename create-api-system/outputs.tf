@@ -35,7 +35,7 @@ output "api_url" {
 
 output "s3_bucket_mlops_name" {
   description = "Tên S3 bucket chứa artifacts MLOps (được tạo trong infra)"
-  value = module.s3_mlops_module.s3_bucket_bucket
+  value       = module.s3_mlops_module.s3_bucket_bucket
 }
 
 output "api_feedback_url" {
