@@ -81,6 +81,8 @@ module "asg_module_ids" {
     # HONEYPOT_ALB_URL = "http://${data.terraform_remote_state.honey_pot.outputs.alb_dns_name}"
     # SQS_QUEUE_URL    = data.terraform_remote_state.infra.outputs.sqs_queue_url
     MODEL_API_URL = "http://${data.terraform_remote_state.api_system.outputs.api_service_hostname}/predict"
+    FEEDBACK_API_URL = "http://${data.terraform_remote_state.api_system.outputs.api_service_hostname}/feedback"
+
   }
 
   subnet_ids                = [
