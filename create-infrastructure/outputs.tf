@@ -71,3 +71,19 @@ output "eks_node_role_arn" {
   description = "IAM role ARN for EKS node group"
   value       = module.iam_module.eks_node_role_arn
 }
+
+output "api_model_bucket_name" {
+  description = "Tên bucket dùng cho model API"
+  value       = module.s3_api_model_bucket.s3_bucket_bucket
+}
+
+output "api_model_bucket_arn" {
+  description = "ARN bucket dùng cho model API"
+  value       = module.s3_api_model_bucket.s3_bucket_arn
+}
+
+output "arf_s3_model_access_policy_arn" {
+  value       = aws_iam_policy.arf_s3_model_access.arn
+  description = "ARN của policy cho phép đọc model từ S3"
+}
+

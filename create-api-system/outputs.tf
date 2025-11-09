@@ -32,13 +32,12 @@ output "api_url" {
   value       = "http://${kubernetes_service.arf_ids_api.status[0].load_balancer[0].ingress[0].hostname}/predict"
 }
 
-
-output "s3_bucket_mlops_name" {
-  description = "Tên S3 bucket chứa artifacts MLOps (được tạo trong infra)"
-  value       = module.s3_mlops_module.s3_bucket_bucket
-}
-
 output "api_feedback_url" {
   description = "URL endpoint của Feedback API (dành cho IDS gửi nhãn thật)"
   value       = "http://${kubernetes_service.arf_ids_api.status[0].load_balancer[0].ingress[0].hostname}/feedback"
+}
+
+output "api_metrics_endpoint" {
+  description = "Endpoint Prometheus sẽ scrape metrics từ API (EKS)"
+  value       = "http://${kubernetes_service.arf_ids_api.status[0].load_balancer[0].ingress[0].hostname}/metrics"
 }

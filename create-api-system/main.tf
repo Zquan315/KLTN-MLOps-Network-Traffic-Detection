@@ -1,4 +1,3 @@
-# Terraform Backend Configuration
 terraform {
   backend "s3" {
     bucket = "terraform-state-bucket-9999"
@@ -7,7 +6,6 @@ terraform {
   }
 }
 
-# Import infrastructure outputs
 data "terraform_remote_state" "infra" {
   backend = "s3"
   config = {
@@ -17,24 +15,19 @@ data "terraform_remote_state" "infra" {
   }
 }
 
-# Locals
+
 locals {
   vpc_id             = data.terraform_remote_state.infra.outputs.vpc_id
   subnet_private_ids = data.terraform_remote_state.infra.outputs.subnet_private_ids
   subnet_public_ids  = data.terraform_remote_state.infra.outputs.subnet_public_ids
   sg_public_id       = data.terraform_remote_state.infra.outputs.security_group_public_id
 
-  eks_cluster_role_arn = data.terraform_remote_state.infra.outputs.eks_cluster_role_arn
-  eks_node_role_arn    = data.terraform_remote_state.infra.outputs.eks_node_role_arn
+  eks_cluster_role_arn          = data.terraform_remote_state.infra.outputs.eks_cluster_role_arn
+  eks_node_role_arn             = data.terraform_remote_state.infra.outputs.eks_node_role_arn
+  arf_s3_model_access_policy_arn = data.terraform_remote_state.infra.outputs.arf_s3_model_access_policy_arn
+  api_model_bucket_name         = data.terraform_remote_state.infra.outputs.api_model_bucket_name
 }
 
-# S3 Bucket for MLOps
-module "s3_mlops_module" {
-  source            = "../modules/s3_module"
-  bucket_name_value = var.s3_bucket_name_mlops_value
-}
-
-# EKS Cluster (dùng IAM roles từ infra)
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "20.13.1"
@@ -46,7 +39,7 @@ module "eks" {
   vpc_id     = local.vpc_id
   subnet_ids = local.subnet_private_ids
 
-  # Tắt tự tạo role, dùng role từ infra
+  # Dùng IAM roles từ infra
   create_iam_role = false
   iam_role_arn    = local.eks_cluster_role_arn
 
@@ -65,10 +58,15 @@ module "eks" {
   tags = {
     Project     = "arf-ids"
     Env         = "prod"
-    MLOpsBucket = module.s3_mlops_module.s3_bucket_bucket
+    S3ModelBucket = local.api_model_bucket_name
   }
+}
 
-  depends_on = [module.s3_mlops_module]
+
+resource "aws_iam_role_policy_attachment" "eks_node_s3_model_access" {
+  role       = basename(module.eks.eks_managed_node_groups["api-nodes"].iam_role_arn)
+  policy_arn = local.arf_s3_model_access_policy_arn
+  depends_on = [module.eks]
 }
 
 data "aws_caller_identity" "current" {}
@@ -81,18 +79,14 @@ locals {
   }
 }
 
-# Tạo access entry cho từng admin
 resource "aws_eks_access_entry" "admins" {
   for_each      = local.eks_admins
   cluster_name  = module.eks.cluster_name
   principal_arn = each.value
   type          = "STANDARD"
-
-  # Chờ xóa workloads trước khi thu hồi quyền
-  depends_on = [module.eks]
+  depends_on    = [module.eks]
 }
 
-# Gắn policy cho mỗi admin
 resource "aws_eks_access_policy_association" "admins" {
   for_each      = local.eks_admins
   cluster_name  = module.eks.cluster_name

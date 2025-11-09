@@ -123,3 +123,44 @@ module "dynamodb_module" {
 #   user_data_path = "../script/ec2_api.sh"
 #   ec2_instance_profile_name = module.iam_module.instance_profile_name
 # }
+
+# ===========================================
+# S3 bucket dành cho API model (ARF IDS)
+# ===========================================
+module "s3_api_model_bucket" {
+  source = "../modules/s3_module"
+
+  bucket_name_value         = "arf-ids-model-bucket"
+  versioning_enabled_value  = true
+
+  # Public access block
+  block_public_acls         = true
+  block_public_policy       = true
+  ignore_public_acls        = true
+  restrict_public_buckets   = true
+}
+
+# ===========================================
+# IAM policy cho phép đọc model từ S3 bucket
+# ===========================================
+resource "aws_iam_policy" "arf_s3_model_access" {
+  name = "arf-s3-model-access"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = ["s3:GetObject", "s3:ListBucket"]
+        Resource = [
+          "arn:aws:s3:::arf-ids-model-bucket",
+          "arn:aws:s3:::arf-ids-model-bucket/*"
+        ]
+      }
+    ]
+  })
+}
+
+
+
+
+

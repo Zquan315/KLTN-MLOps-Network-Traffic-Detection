@@ -38,6 +38,16 @@ resource "kubernetes_deployment" "arf_ids_api" {
             value = "production"
           }
 
+          env {
+            name  = "MODEL_BUCKET"
+            value = "arf-ids-model-bucket"
+          }
+
+          env {
+            name  = "MODEL_VERSION"
+            value = "v1.0"
+          }
+
           resources {
             requests = {
               cpu    = "250m"
@@ -53,7 +63,6 @@ resource "kubernetes_deployment" "arf_ids_api" {
     }
   }
 
-  # Đảm bảo EKS đã tạo xong trước khi apply Deployment
   depends_on = [
     module.eks,
     aws_eks_access_entry.admins,
