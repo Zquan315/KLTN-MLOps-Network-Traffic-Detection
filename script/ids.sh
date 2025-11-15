@@ -65,17 +65,6 @@ chown -R ubuntu:ubuntu /home/ubuntu/ids-ingress-predict
 echo "[+] Starting IDS Agent..."
 
 # ==========================================================
-# Export model API URLs từ Terraform (template variable)
-# ==========================================================
-echo "[+] MODEL_API_URL = ${MODEL_API_URL}"
-echo "[+] FEEDBACK_API_URL = ${FEEDBACK_API_URL}"
-
-echo "MODEL_API_URL=${MODEL_API_URL}" | tee -a /etc/environment
-echo "FEEDBACK_API_URL=${FEEDBACK_API_URL}" | tee -a /etc/environment
-
-export MODEL_API_URL
-export FEEDBACK_API_URL
-# ==========================================================
 sudo -E -u ubuntu nohup python3 application.py > /home/ubuntu/logs/ids_agent.log 2>&1 &
 sleep 3
 

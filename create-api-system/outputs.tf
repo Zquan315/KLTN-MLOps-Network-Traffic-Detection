@@ -26,18 +26,3 @@ output "api_service_port" {
   description = "Port công khai của API Service"
   value       = kubernetes_service.arf_ids_api.spec[0].port[0].port
 }
-
-output "api_url" {
-  description = "URL endpoint đầy đủ của ARF IDS API"
-  value       = "http://${kubernetes_service.arf_ids_api.status[0].load_balancer[0].ingress[0].hostname}/predict"
-}
-
-output "api_feedback_url" {
-  description = "URL endpoint của Feedback API (dành cho IDS gửi nhãn thật)"
-  value       = "http://${kubernetes_service.arf_ids_api.status[0].load_balancer[0].ingress[0].hostname}/feedback"
-}
-
-output "api_metrics_endpoint" {
-  description = "Endpoint Prometheus sẽ scrape metrics từ API (EKS)"
-  value       = "http://${kubernetes_service.arf_ids_api.status[0].load_balancer[0].ingress[0].hostname}/metrics"
-}
