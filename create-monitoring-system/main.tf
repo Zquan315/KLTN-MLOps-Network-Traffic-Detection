@@ -61,7 +61,7 @@ module "alb_module_monitoring" {
   http_port             = var.http_port_value
 
   routes = [
-    { name = "prometheus", port = 9090, path_patterns = ["/prometheus", "/prometheus/*"], health_path = "/prometheus/-/ready", matcher = "200-399" },
+    { name = "prometheus", port = 9090, path_patterns = ["/prometheus", "/prometheus/*"], health_path = "/prometheus", matcher = "200-399" },
     { name = "grafana", port = 3000, path_patterns = ["/"], health_path = "/", matcher = "200" },
     { name = "metrics-monitor", port = 9100, path_patterns = ["/metrics"], health_path = "/metrics", matcher = "200" }
   ]
@@ -87,11 +87,10 @@ module "asg_module_monitoring" {
   name_instance             = "monitoring_instance" 
   user_data_path            = var.user_data_path_value
   user_data_template_vars = {
-    ALB_DNS_IDS    = data.terraform_remote_state.ids.outputs.alb_dns_name
-    #EC2_API_IP     = data.terraform_remote_state.infra.outputs.ec2_api_public_ip
-    #ALB_DNS_HONEYPOT = data.terraform_remote_state.honey_pot.outputs.alb_dns_name
-    ALB_DNS_LOG      = data.terraform_remote_state.logs.outputs.alb_dns_name
-    ALB_DNS_MONITOR  = module.alb_module_monitoring.alb_dns_name
+    IDS_URL = "ids.qmuit.id.vn"
+    LOG_URL = "logs.qmuit.id.vn"
+    MONITOR_URL = "monitoring.qmuit.id.vn"
+    API_URL = "api.qmuit.id.vn"
   }
 
   subnet_ids                = [
@@ -106,12 +105,12 @@ module "asg_module_monitoring" {
   ]  
 }
 
-module "route53_module_monitoring" {
-  source = "../modules/route53_module"
-  # Route 53
-  route53_zone_name            = var.route53_zone_name_value
-  route53_record_type          = var.route53_record_type_value
-  route53_record_alias_name    = module.alb_module_monitoring.alb_dns_name
-  route53_record_alias_zone_id = module.alb_module_monitoring.alb_zone_id
+# module "route53_module_monitoring" {
+#   source = "../modules/route53_module"
+#   # Route 53
+#   route53_zone_name            = var.route53_zone_name_value
+#   route53_record_type          = var.route53_record_type_value
+#   route53_record_alias_name    = module.alb_module_monitoring.alb_dns_name
+#   route53_record_alias_zone_id = module.alb_module_monitoring.alb_zone_id
   
-}
+# }

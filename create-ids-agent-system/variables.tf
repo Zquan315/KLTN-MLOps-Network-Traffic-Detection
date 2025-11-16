@@ -49,12 +49,3 @@ variable "user_data_path_value" {
   type        = string
 }
 
-# variables for route53
-variable "route53_zone_name_value" {
-  description = "The name of the Route 53 hosted zone"
-  type        = string
-}
-variable "route53_record_type_value" {
-  description = "The type of the Route 53 record (e.g., A, CNAME)"
-  type        = string
-}

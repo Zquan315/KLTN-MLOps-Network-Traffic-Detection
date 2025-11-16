@@ -76,11 +76,10 @@ module "asg_module_ids" {
 
   name_instance             = "ids_instance" 
   user_data_path            = var.user_data_path_value 
-  user_data_template_vars = {
-    #EC2_API_IP        = data.terraform_remote_state.infra.outputs.ec2_api_public_ip
-    # HONEYPOT_ALB_URL = "http://${data.terraform_remote_state.honey_pot.outputs.alb_dns_name}"
-    # SQS_QUEUE_URL    = data.terraform_remote_state.infra.outputs.sqs_queue_url
-  }
+  # user_data_template_vars = {
+  #   HONEY_POT_URL    = "http://honeypot.qmuit.id.vn/"
+  #   SQS_QUEUE_URL    = data.terraform_remote_state.infra.outputs.sqs_queue_url
+  # }
 
   subnet_ids                = [
     data.terraform_remote_state.infra.outputs.subnet_public_ids[0],
@@ -94,12 +93,12 @@ module "asg_module_ids" {
 
 }
 
-module "route53_module_ids" {
-  source = "../modules/route53_module"
-  # Route 53
-  route53_zone_name            = var.route53_zone_name_value
-  route53_record_type          = var.route53_record_type_value
-  route53_record_alias_name    = module.alb_module_ids.alb_dns_name
-  route53_record_alias_zone_id = module.alb_module_ids.alb_zone_id
+# module "route53_module_ids" {
+#   source = "../modules/route53_module"
+#   # Route 53
+#   route53_zone_name            = var.route53_zone_name_value
+#   route53_record_type          = var.route53_record_type_value
+#   route53_record_alias_name    = module.alb_module_ids.alb_dns_name
+#   route53_record_alias_zone_id = module.alb_module_ids.alb_zone_id
   
-}
+# }

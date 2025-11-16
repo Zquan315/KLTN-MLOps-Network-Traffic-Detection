@@ -161,3 +161,9 @@ variable "sqs_queue_name_value" {
 #   description = "The recipient email address."
 #   type        = string
 # }
+
+# variables for EKS
+variable "eks_cluster_name" {
+  description = "EKS Cluster name"
+  type        = string
+}

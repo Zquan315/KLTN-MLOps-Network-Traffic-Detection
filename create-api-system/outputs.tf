@@ -1,28 +1,41 @@
-output "eks_cluster_name" {
-  description = "Tên của EKS cluster được tạo cho API IDS"
-  value       = module.eks.cluster_name
+# Output cho IDS API
+output "ids_alb_dns_name" {
+  description = "The DNS name of the ALB for IDS API"
+  value       = try(kubernetes_ingress_v1.ids_ingress.status[0].load_balancer[0].ingress[0].hostname, "Pending - ALB is being created")
 }
 
-output "eks_endpoint" {
-  description = "API endpoint của EKS cluster"
-  value       = module.eks.cluster_endpoint
+output "predict_api_endpoint" {
+  description = "Public URL for the prediction API"
+  value       = try(
+    "http://${kubernetes_ingress_v1.ids_ingress.status[0].load_balancer[0].ingress[0].hostname}/predict",
+    "Pending - waiting for ALB creation"
+  )
 }
 
-output "nodegroup_role_arn" {
-  value = module.eks.eks_managed_node_groups["api-nodes"].iam_role_arn
+# Output cho MLflow
+output "mlflow_alb_dns_name" {
+  description = "The DNS name of the ALB for MLflow"
+  value       = try(kubernetes_ingress_v1.mlflow_ingress.status[0].load_balancer[0].ingress[0].hostname, "Pending - ALB is being created")
 }
 
-output "vpc_id" {
-  description = "VPC ID được tái sử dụng từ create-infrastructure"
-  value       = data.terraform_remote_state.infra.outputs.vpc_id
+output "mlflow_endpoint" {
+  description = "Public URL for the MLflow UI"
+  value       = try(
+    "http://${kubernetes_ingress_v1.mlflow_ingress.status[0].load_balancer[0].ingress[0].hostname}",
+    "Pending - waiting for ALB creation"
+  )
 }
 
-output "api_service_hostname" {
-  description = "Public hostname của API Service (LoadBalancer)"
-  value       = kubernetes_service.arf_ids_api.status[0].load_balancer[0].ingress[0].hostname
+output "mlflow_artifact_s3_path" {
+  description = "S3 path for MLflow artifacts"
+  value       = "s3://${data.terraform_remote_state.infra.outputs.api_model_bucket_name}/mlflow-artifacts"
 }
 
-output "api_service_port" {
-  description = "Port công khai của API Service"
-  value       = kubernetes_service.arf_ids_api.spec[0].port[0].port
+# Status của cả 2 Ingress
+output "ingress_status" {
+  description = "Status of the Ingress resources"
+  value = {
+    ids_ready   = length(try(kubernetes_ingress_v1.ids_ingress.status[0].load_balancer[0].ingress, [])) > 0
+    mlflow_ready = length(try(kubernetes_ingress_v1.mlflow_ingress.status[0].load_balancer[0].ingress, [])) > 0
+  }
 }

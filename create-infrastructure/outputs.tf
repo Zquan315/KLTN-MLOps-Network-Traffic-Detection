@@ -87,3 +87,26 @@ output "arf_s3_model_access_policy_arn" {
   description = "ARN của policy cho phép đọc model từ S3"
 }
 
+# ============================================================
+# EKS OUTPUTS
+# ============================================================
+output "eks_cluster_name" {
+  description = "Name of the EKS cluster"
+  value       = module.eks.cluster_name
+}
+
+output "eks_cluster_endpoint" {
+  description = "Endpoint for EKS cluster"
+  value       = module.eks.cluster_endpoint
+}
+
+output "eks_cluster_certificate_authority_data" {
+  description = "Certificate authority data for EKS cluster"
+  value       = module.eks.cluster_certificate_authority_data
+  sensitive   = true
+}
+
+output "eks_oidc_provider_arn" {
+  description = "ARN of the OIDC Provider for EKS"
+  value       = module.eks.oidc_provider_arn 
+}

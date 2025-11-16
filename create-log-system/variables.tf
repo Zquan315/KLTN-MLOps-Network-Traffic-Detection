@@ -54,15 +54,6 @@ variable "user_data_path_value" {
   type        = string
 }
 
-# variables for route53
-variable "route53_zone_name_value" {
-  description = "Route 53 hosted zone name"
-  type        = string
-}
-variable "route53_record_type_value" {
-  description = "Type of DNS record (e.g., A, CNAME)"
-  type        = string
-}
 
 # variables for codeDeploy
 variable "code_deploy_app_name_value" {

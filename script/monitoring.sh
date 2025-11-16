@@ -51,7 +51,7 @@ scrape_configs:
     metrics_path: /metrics
     scheme: http
     static_configs: 
-      - targets: ["${ALB_DNS_IDS}"] 
+      - targets: ["${IDS_URL}"] 
         labels:
           app: "ids_node"
 
@@ -59,7 +59,7 @@ scrape_configs:
     metrics_path: /metrics
     scheme: http
     static_configs: 
-      - targets: ["${ALB_DNS_LOG}"] 
+      - targets: ["${LOG_URL}"] 
         labels:
           app: "log_system"
 
@@ -67,10 +67,20 @@ scrape_configs:
     metrics_path: /metrics
     scheme: http
     static_configs: 
-      - targets: ["${ALB_DNS_MONITOR}"] 
+      - targets: ["${MONITOR_URL}"] 
         labels:
           app: "monitoring_system"
+
+  - job_name: 'api-system'  
+    metrics_path: /metrics
+    scheme: http
+    static_configs: 
+      - targets: ["${API_URL}"] 
+        labels:
+          app: "api_system"
 YAML
+sudo mkdir -p /opt/monitoring/grafana
+sudo chmod 777 -R /opt/monitoring/grafana
 
 sudo cat > /opt/monitoring/docker-compose.yml <<'YAML'
 services:
@@ -79,8 +89,7 @@ services:
     container_name: prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
-      - --web.external-url=http://monitoring.qm.uit/
-      - --web.route-prefix=/prometheus
+      - --web.external-url=http://monitoring.qmuit.id.vn/prometheus/
     volumes:
       - /opt/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     ports:
@@ -90,11 +99,15 @@ services:
     image: grafana/grafana:latest
     container_name: grafana
     environment:
-      - GF_SERVER_ROOT_URL=http://monitoring.qm.uit/
+      - GF_SERVER_ROOT_URL=http://monitoring.qmuit.id.vn/
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
     ports:
       - "3000:3000"
+    volumes:
+      - /opt/monitoring/grafana:/var/lib/grafana
     restart: unless-stopped
 YAML
 
 cd /opt/monitoring/
-sudo docker-compose up -d
+sudo -E docker-compose up -d

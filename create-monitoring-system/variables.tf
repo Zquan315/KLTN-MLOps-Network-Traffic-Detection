@@ -49,13 +49,3 @@ variable "max_size_value" {
   description = "Maximum size for the Auto Scaling group"
   type        = number
 }
-
-# variables for route53
-variable "route53_zone_name_value" {
-  description = "The name of the Route 53 hosted zone"
-  type        = string
-}
-variable "route53_record_type_value" {
-  description = "The type of the Route 53 record (e.g., A, CNAME)"
-  type        = string
-}

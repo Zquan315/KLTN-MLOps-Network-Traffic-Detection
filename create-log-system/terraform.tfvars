@@ -12,9 +12,7 @@ desired_capacity_value = 2
 min_size_value = 2
 max_size_value = 4
 user_data_path_value = "../script/log-system.sh"
-# Route53
-route53_zone_name_value = "logs.qm.uit"
-route53_record_type_value = "A"
+
 
 # CodeDeploy application and deployment group
 code_deploy_app_name_value = "code_deploy_app"

@@ -16,6 +16,8 @@ resource "aws_subnet" "subnet_private" {
     map_public_ip_on_launch = var.map_public_ip_on_launch_private_value
     tags = {
         Name = "subnet-private-${count.index}"
+        "kubernetes.io/role/internal-elb"     = "1"
+        "kubernetes.io/cluster/arf-ids-cluster" = "shared"
     }
 }
 
@@ -27,6 +29,9 @@ resource "aws_subnet" "subnet_public" {
     map_public_ip_on_launch = var.map_public_ip_on_launch_public_value
     tags = {
         Name = "subnet-public-${count.index}"
+        "kubernetes.io/role/elb"              = "1"
+        "kubernetes.io/cluster/arf-ids-cluster" = "shared"
+        
     }
 }
 

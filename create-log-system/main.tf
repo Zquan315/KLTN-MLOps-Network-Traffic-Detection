@@ -70,15 +70,15 @@ module "asg_module_logs" {
   ]  
 }
 
-module "route53_module_logs" {
-  source = "../modules/route53_module"
-  # Route 53
-  route53_zone_name            = var.route53_zone_name_value
-  route53_record_type          = var.route53_record_type_value
-  route53_record_alias_name    = module.alb_module_logs.alb_dns_name
-  route53_record_alias_zone_id = module.alb_module_logs.alb_zone_id
+# module "route53_module_logs" {
+#   source = "../modules/route53_module"
+#   # Route 53
+#   route53_zone_name            = var.route53_zone_name_value
+#   route53_record_type          = var.route53_record_type_value
+#   route53_record_alias_name    = module.alb_module_logs.alb_dns_name
+#   route53_record_alias_zone_id = module.alb_module_logs.alb_zone_id
   
-}
+# }
 
 # Create CodeDeploy application and deployment group
 module "codeDeploy_module" {

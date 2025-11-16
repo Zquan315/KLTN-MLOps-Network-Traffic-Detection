@@ -70,7 +70,7 @@ ingress_rules_public_value = [
     to_port     = 5000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "Access to port 5000 from anywhere for ids"
+    description = "Access to port 5000 from anywhere for mlflow"
   },
   {
     from_port   = 5500
@@ -78,6 +78,13 @@ ingress_rules_public_value = [
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
     description = "Access to port 5500 from anywhere for honey pot"
+  },
+  {
+    from_port   = 8000
+    to_port     = 8000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Access to port 8000 from anywhere for predict API"
   },
   {
     from_port   = 8080
@@ -134,3 +141,6 @@ sqs_queue_name_value = "ids-attack-alert-redirect-queue"
 # lambda_source_file_path_value = "../lambda_code/lambda_function.py"
 # sender_email_value = "tocongquan315@gmail.com"
 # to_email_value = "tocongquan315@gmail.com"
+
+# EKS
+eks_cluster_name = "arf-ids-cluster"

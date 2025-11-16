@@ -12,6 +12,3 @@ desired_capacity_value = 2
 min_size_value = 2
 max_size_value = 4
 user_data_path_value = "../script/ids.sh"
-# route53
-route53_zone_name_value = "ids.qm.uit"
-route53_record_type_value = "A"
