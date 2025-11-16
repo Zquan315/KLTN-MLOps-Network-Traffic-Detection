@@ -31,6 +31,14 @@ resource "aws_lb_target_group" "tg" {
     healthy_threshold   = 2
     unhealthy_threshold = 2
   }
+
+  stickiness {
+    enabled         = true
+    type            = "lb_cookie"
+    cookie_duration = 86400
+  }
+
+  deregistration_delay = 30
 }
 
 resource "aws_lb_listener" "http" {

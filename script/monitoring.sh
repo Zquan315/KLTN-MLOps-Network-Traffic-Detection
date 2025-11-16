@@ -79,19 +79,25 @@ scrape_configs:
         labels:
           app: "api_system"
 YAML
-sudo mkdir -p /opt/monitoring/grafana
-sudo chmod 777 -R /opt/monitoring/grafana
+sudo mkdir -p /opt/monitoring/grafana_data
+sudo mkdir -p /opt/monitoring/prometheus_data
+sudo chmod 777 -R /opt/monitoring/grafana_data /opt/monitoring/prometheus_data
 
 sudo cat > /opt/monitoring/docker-compose.yml <<'YAML'
+version: '3.8'
 services:
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
-      - --web.external-url=http://monitoring.qmuit.id.vn/prometheus/
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+      - --web.external-url=http://monitoring.qmuit.id.vn/prometheus
+      - --web.route-prefix=/prometheus
     volumes:
       - /opt/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
     ports:
       - "9090:9090"
     restart: unless-stopped
@@ -99,14 +105,20 @@ services:
     image: grafana/grafana:latest
     container_name: grafana
     environment:
-      - GF_SERVER_ROOT_URL=http://monitoring.qmuit.id.vn/
+      - GF_SERVER_ROOT_URL=http://monitoring.qmuit.id.vn
+      - GF_SERVER_SERVE_FROM_SUB_PATH=false
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_SECURITY_ADMIN_PASSWORD_CHANGE_REQUIRED=false
+      - GF_AUTH_LDAP_ENABLED=false
     ports:
       - "3000:3000"
     volumes:
-      - /opt/monitoring/grafana:/var/lib/grafana
+      - grafana_data:/var/lib/grafana
     restart: unless-stopped
+volumes:
+  prometheus_data:
+  grafana_data:
 YAML
 
 cd /opt/monitoring/
