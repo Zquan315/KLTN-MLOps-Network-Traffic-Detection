@@ -145,12 +145,18 @@ module "s3_api_model_bucket" {
 # ===========================================
 resource "aws_iam_policy" "arf_s3_model_access" {
   name = "arf-s3-model-access"
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
         Effect = "Allow"
-        Action = ["s3:GetObject", "s3:ListBucket"]
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket",
+          "s3:PutObject",
+          "s3:DeleteObject"
+        ]
         Resource = [
           "arn:aws:s3:::arf-ids-model-bucket",
           "arn:aws:s3:::arf-ids-model-bucket/*"
@@ -159,6 +165,7 @@ resource "aws_iam_policy" "arf_s3_model_access" {
     ]
   })
 }
+
 
 # ============================================================
 # EKS CLUSTER
@@ -198,9 +205,10 @@ module "eks" {
   eks_managed_node_groups = {
     api-nodes = {
       name           = "api"
-      desired_size   = 1
+      desired_size   = 2
       min_size       = 1
       max_size       = 3
+      force_update_version = true
       instance_types = ["t2.medium"]
       capacity_type  = "ON_DEMAND"
 
