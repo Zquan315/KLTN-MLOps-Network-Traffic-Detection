@@ -46,16 +46,21 @@ python3 -m pip install flask flask-socketio flask-cors werkzeug==3.0.3 \
                         requests httpx boto3 eventlet gunicorn gevent gevent-websocket \
                         simplejson jinja2 --ignore-installed blinker -q --no-input || true
 
+sudo timedatectl set-timezone "Asia/Ho_Chi_Minh"
 # ----------------------------------------------------------
 # 3. Clone & run IDS Agent
 # ----------------------------------------------------------
 echo "[+] Cloning IDS Agent..."
 cd /home/ubuntu
+
+
 if [ ! -d "ids-ingress-predict" ]; then
   git clone https://github.com/bqmxnh/ids-ingress-predict.git
 else
   cd ids-ingress-predict && git pull && cd ..
 fi
+
+cd /home/ubuntu/ids-ingress-predict
 
 mkdir -p /home/ubuntu/logs
 chown ubuntu:ubuntu /home/ubuntu/logs
@@ -64,8 +69,12 @@ chown -R ubuntu:ubuntu /home/ubuntu/ids-ingress-predict
 
 echo "[+] Starting IDS Agent..."
 
+export EMAIL_LAMBDA_URL="${EMAIL_LAMBDA_URL}"
 # ==========================================================
-sudo -E -u ubuntu nohup python3 application.py > /home/ubuntu/logs/ids_agent.log 2>&1 &
+sudo -E -u ubuntu bash -c "
+  export EMAIL_LAMBDA_URL='$EMAIL_LAMBDA_URL'
+  nohup python3 application.py > /home/ubuntu/logs/ids_agent.log 2>&1 &
+"
 sleep 3
 
 if pgrep -f "application.py" >/dev/null; then

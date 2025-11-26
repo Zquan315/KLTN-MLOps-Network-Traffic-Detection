@@ -29,93 +29,208 @@ systemctl enable --now node_exporter
 echo "[✓] Node Exporter running on port :9100"
 # ----------------------------------------------------------
 
-# Cài đặt Python và Flask
-sudo apt-get update -y
-sudo apt-get install -y python3-pip
+sudo apt update -y
+sudo apt install -y python3 python3-pip python3-venv
 sudo pip3 install Flask
 
-# Tạo thư mục log
-sudo mkdir -p /home/ubuntu/log/honeypot
-sudo chown ubuntu:ubuntu /home/ubuntu/log/honeypot
+sudo mkdir -p /home/ubuntu/logs/
+sudo chown ubuntu:ubuntu /home/ubuntu/logs/
+cd /home/ubuntu
+sudo -u ubuntu python3 -m venv venv 
 
-# 1. Tạo file ứng dụng honeypot
-sudo tee /home/ubuntu/honeypot_app.py > /dev/null <<EOF
-import os
-import csv
-import json
-from flask import Flask, request
-import datetime
-import logging
-from threading import Lock
-
-app = Flask(__name__)
-LOG_DIR = '/home/ubuntu/log/honeypot'
-lock = Lock()
-
-# Cấu hình logging cơ bản
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Endpoint này sẽ nhận tất cả các request tấn công
-@app.route('/', defaults={'path': ''}, methods=['GET', 'POST', 'PUT', 'DELETE'])
-@app.route('/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
-def honeypot_listener(path):
-    try:
-        # Lấy ngày hiện tại YYYY-MM-DD
-        today = datetime.datetime.now().strftime('%Y-%m-%d')
-        log_file_path = os.path.join(LOG_DIR, f'honeypot_attacks_{today}.csv')
-        
-        # Lấy dữ liệu JSON từ request (do ids-agent gửi qua)
-        # csv_playback.py gửi JSON, nên chúng ta nhận JSON
-        attack_data = request.get_json()
-
-        if not attack_data:
-            attack_data = {"error": "No JSON payload received", "source_ip": request.remote_addr}
-
-        # Ghi vào file CSV
-        # Sử dụng 'lock' để tránh lỗi khi ghi file đồng thời
-        with lock:
-            # Kiểm tra nếu file chưa tồn tại -> ghi header
-            file_exists = os.path.isfile(log_file_path)
-            
-            with open(log_file_path, 'a', newline='') as f:
-                # Lấy tất cả các keys từ JSON làm header
-                # Chúng ta giả định attack_data là một dict phẳng
-                if not isinstance(attack_data, dict):
-                    attack_data = {'payload': json.dumps(attack_data)}
-
-                fieldnames = attack_data.keys()
-                writer = csv.DictWriter(f, fieldnames=fieldnames)
-
-                if not file_exists:
-                    writer.writeheader()
-                
-                writer.writerow(attack_data)
-
-        logger.info(f"Logged attack to {log_file_path}")
-        
-        # Trả về 200 OK để ids-agent biết đã nhận
-        return {"status": "logged"}, 200
-
-    except Exception as e:
-        logger.error(f"Error in honeypot: {e}")
-        return {"status": "error"}, 500
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5500)
+# Install dependencies
+cat > requirements.txt <<EOF
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-dateutil==2.8.2
 EOF
+sudo chown ubuntu:ubuntu requirements.txt
+sudo -u ubuntu /home/ubuntu/venv/bin/pip install -r requirements.txt
 
-# 2. Tạo systemd service để chạy ứng dụng honeypot
-sudo tee /etc/systemd/system/honeypot.service > /dev/null <<EOF
+# ============================================
+# HONEYPOT APPLICATION
+# ============================================
+cat > /home/ubuntu/honeypot_app.py <<'PYTHON'
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse, JSONResponse
+from datetime import datetime, timezone, timedelta
+import json
+import csv
+from pathlib import Path
+import logging
+
+# Logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s'
+)
+
+app = FastAPI(title="Honeypot System", version="1.0.0")
+
+LOGS_DIR = Path("/home/ubuntu/logs")
+LOGS_DIR.mkdir(exist_ok=True, parents=True)
+
+@app.get("/")
+async def root():
+    return {
+        "status": "active",
+        "service": "ARF IDS Honeypot",
+        "message": "This is a decoy system for attack traffic analysis",
+        "timestamp": datetime.now().isoformat()
+    }
+
+@app.get("/health")
+async def health():
+    return {"status": "healthy"}
+
+@app.post("/receive_attack")
+async def receive_attack(flow: dict):
+    """Receive redirected attack traffic from IDS"""
+    try:
+        # Get today's log file
+        dt_vn = datetime.now(timezone(timedelta(hours=7)))
+        today = dt_vn.strftime("%Y%m%d")
+        timestamp = dt_vn.strftime('%Y-%m-%d %H:%M:%S')  # UTC+7
+        log_file = LOGS_DIR / f"attack_traffic_{today}.csv"
+        
+        # Extract flow data
+        flow_id = flow.get("Flow ID") or flow.get("flow_id", "unknown")
+
+        # Prepare row
+        row = {
+            "timestamp": timestamp,
+            "flow_id": flow.get("Flow ID", ""),
+            "src_ip": flow.get("Source IP", ""),
+            "src_port": flow.get("Source Port", ""),
+            "dst_ip": flow.get("Destination IP", ""),
+            "dst_port": flow.get("Destination Port", ""),
+            "protocol": flow.get("Protocol", ""),
+            "label": "ATTACK",
+            "content": f"{flow.get('Source IP')}:{flow.get('Source Port')} → {flow.get('Destination IP')}:{flow.get('Destination Port')} ({flow.get('Protocol', 'TCP')})",
+            "features_json": json.dumps(flow)
+        }
+        
+        # Write to CSV
+        file_exists = log_file.exists()
+        with open(log_file, "a", newline="", encoding="utf-8") as f:
+            fieldnames = ["flow_id", "timestamp", "src_ip", "src_port", "dst_ip", 
+                        "dst_port", "protocol", "label", "content", "features_json"]
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+                
+            if not file_exists:
+                writer.writeheader()
+                
+            writer.writerow(row)
+            
+        logging.info(f"[HONEYPOT] Logged attack flow: {flow_id}")
+            
+        return {
+            "status": "logged",
+            "flow_id": flow_id,
+            "timestamp": timestamp,
+            "log_file": str(log_file)
+        }
+    except Exception as e:
+        logging.error(f"[HONEYPOT] Error logging attack flow: {e}")
+        raise HTTPException(status_code=500, detail="Error logging attack flow")
+
+@app.get("/stats")
+async def get_stats():
+    """Get honeypot statistics"""
+    today = datetime.now().strftime("%Y%m%d")
+    log_file = LOGS_DIR / f"attack_traffic_{today}.csv"
+    
+    if not log_file.exists():
+        return {
+            "date": today,
+            "count": 0,
+            "file": str(log_file),
+            "size_bytes": 0
+        }
+    
+    with open(log_file, "r") as f:
+        count = sum(1 for _ in f) - 1  # Exclude header
+    file_size = log_file.stat().st_size
+
+    return {
+        "count": count,
+        "date": today,
+        "file": str(log_file),
+        "size_bytes": file_size,
+        "size_mb": round(file_size / 1024 / 1024, 2)
+    }
+
+@app.get("/logs/{date}")
+async def download_logs(date: str):
+    """
+    Download logs for a specific date
+    Format: YYYYMMDD (e.g., 20251116)
+    """
+    # Validate date format
+    try:
+        datetime.strptime(date, "%Y%m%d")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYYMMDD")
+    
+    log_file = LOGS_DIR / f"attack_traffic_{date}.csv"
+    
+    if not log_file.exists():
+        raise HTTPException(status_code=404, detail=f"Log file for {date} not found")
+    
+    return FileResponse(
+        path=log_file,
+        filename=f"attack_traffic_{date}.csv",
+        media_type="text/csv"
+    )
+
+# ============================================
+# LIST ALL LOG FILES
+# ============================================
+@app.get("/logs")
+async def list_logs():
+    """List all available log files"""
+    log_files = sorted(LOGS_DIR.glob("attack_traffic_*.csv"))
+    
+    files_info = []
+    for log_file in log_files:
+        # Extract date from filename
+        date_str = log_file.stem.replace("attack_traffic_", "")
+        
+        with open(log_file, "r") as f:
+            count = sum(1 for _ in f) - 1  # Exclude header
+        
+        files_info.append({
+            "date": date_str,
+            "filename": log_file.name,
+            "count": count,
+            "size_bytes": log_file.stat().st_size,
+            "download_url": f"/logs/{date_str}"
+        })
+    
+    return {
+        "total_files": len(files_info),
+        "files": files_info
+    }
+
+PYTHON
+
+sudo chown ubuntu:ubuntu /home/ubuntu/honeypot_app.py
+
+# ============================================
+# SYSTEMD SERVICE
+# ============================================
+sudo cat > /etc/systemd/system/honeypot.service <<EOF
 [Unit]
-Description=Honeypot Logger Service
+Description=Honeypot System
 After=network.target
 
 [Service]
 User=ubuntu
-ExecStart=/usr/bin/python3 /home/ubuntu/honeypot_app.py
-Restart=on-failure
+Group=ubuntu
 WorkingDirectory=/home/ubuntu
+ExecStart=/home/ubuntu/venv/bin/uvicorn honeypot_app:app --host 0.0.0.0 --port 5500 --workers 2
+Restart=always
+RestartSec=5s
 StandardOutput=journal
 StandardError=journal
 
@@ -123,7 +238,7 @@ StandardError=journal
 WantedBy=multi-user.target
 EOF
 
-# 3. Khởi chạy dịch vụ
 sudo systemctl daemon-reload
 sudo systemctl enable --now honeypot
-sudo systemctl start honeypot
+
+echo "[✓] Honeypot system deployed on port 5500"

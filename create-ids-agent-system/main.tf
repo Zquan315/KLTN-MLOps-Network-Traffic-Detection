@@ -17,14 +17,14 @@ data "terraform_remote_state" "infra" {
   }
 }
 
-# data "terraform_remote_state" "honey_pot" {
-#   backend = "s3"
-#   config = {
-#    bucket = "terraform-state-bucket-9999"
-#     key    = "create-honey-pot-system/terraform.tfstate"
-#     region = "us-east-1"
-#   }
-# }
+data "terraform_remote_state" "honey_pot" {
+  backend = "s3"
+  config = {
+    bucket = "terraform-state-bucket-9999"
+    key    = "create-honey-pot-system/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
 
 # lấy output từ workspace API
 data "terraform_remote_state" "api_system" {
@@ -76,10 +76,9 @@ module "asg_module_ids" {
 
   name_instance             = "ids_instance" 
   user_data_path            = var.user_data_path_value 
-  # user_data_template_vars = {
-  #   HONEY_POT_URL    = "http://honeypot.qmuit.id.vn/"
-  #   SQS_QUEUE_URL    = data.terraform_remote_state.infra.outputs.sqs_queue_url
-  # }
+  user_data_template_vars = {
+    EMAIL_LAMBDA_URL    = data.terraform_remote_state.honey_pot.outputs.email_api_endpoint
+  }
 
   subnet_ids                = [
     data.terraform_remote_state.infra.outputs.subnet_public_ids[0],

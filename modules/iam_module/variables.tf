@@ -70,11 +70,6 @@ variable "table_name_value" {
   default     = "ids_log_system"
 }
 
-variable "sqs_queue_arn" {
-  description = "ARN của SQS queue dùng cho cảnh báo"
-  type        = string
-  default     = null
-}
 
 variable "count_value" {
   description = "Số lượng để tạo policy SQS (0 hoặc 1)"

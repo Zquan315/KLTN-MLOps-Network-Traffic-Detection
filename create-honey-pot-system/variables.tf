@@ -52,3 +52,22 @@ variable "user_data_path_value" {
   description = "Path to the user data script for EC2 instances"
   type        = string
 }
+
+variable "function_name_value" {
+  description = "Name of the Lambda function"
+  type        = string
+}
+
+variable "lambda_source_file_path_value" {
+  description = "Path to the Lambda function source code"
+  type        = string
+}
+
+variable "sender_email_value" {
+  description = "Sender email address for alerts"
+  type        = string
+}
+variable "to_email_value" {
+  description = "Recipient email address for alerts"
+  type        = string
+}

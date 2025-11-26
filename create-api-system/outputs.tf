@@ -1,7 +1,7 @@
 output "ids_api_alb_dns" {
   description = "ALB DNS for IDS API"
   value = try(
-    data.kubernetes_ingress_v1.ids_ingress.status[0].load_balancer[0].ingress[0].hostname,
+    data.kubernetes_ingress_v1.ids_api_ingress.status[0].load_balancer[0].ingress[0].hostname,
     "Pending - ALB not created yet"
   )
 }
