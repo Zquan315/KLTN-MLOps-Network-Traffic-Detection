@@ -91,6 +91,7 @@ module "asg_module_monitoring" {
     LOG_URL = "logs.qmuit.id.vn"
     MONITOR_URL = "monitoring.qmuit.id.vn"
     API_URL = "api.qmuit.id.vn"
+    HONEYPOT_URL = "honeypot.qmuit.id.vn"
   }
 
   subnet_ids                = [

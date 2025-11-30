@@ -78,6 +78,14 @@ scrape_configs:
       - targets: ["${API_URL}"] 
         labels:
           app: "api_system"
+
+  - job_name: 'honeypot-system'  
+    metrics_path: /metrics
+    scheme: http
+    static_configs: 
+      - targets: ["${HONEYPOT_URL}"] 
+        labels:
+          app: "honeypot_system"
 YAML
 sudo mkdir -p /opt/monitoring/grafana_data
 sudo mkdir -p /opt/monitoring/prometheus_data
