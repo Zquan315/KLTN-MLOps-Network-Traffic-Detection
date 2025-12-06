@@ -29,7 +29,7 @@ resource "helm_release" "argocd" {
   # ---- Expose load balancer ----
   set {
     name  = "server.service.type"
-    value = "LoadBalancer"
+    value = "ClusterIP"
   }
 
   # ---- Optional: để access không cần TLS ----

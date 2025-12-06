@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket         = "terraform-state-bucket-9999" 
+    bucket         = "terraform-state-bucket-99999" 
     key            = "create-infrastructure/terraform.tfstate"
     region         = "us-east-1" 
   }
@@ -109,13 +109,32 @@ module "dynamodb_module" {
 #   ec2_instance_profile_name = module.iam_module.instance_profile_name
 # }
 
+
+
+# ===========================================
+# S3 BUCKET FOR TRAINING DATA (base.csv + drift data)
+# ===========================================
+module "s3_training_data_bucket" {
+  source = "../modules/s3_module"
+
+  bucket_name_value        = "qmuit-training-data-store"
+  versioning_enabled_value = true
+
+  # Block all public access
+  block_public_acls        = true
+  block_public_policy      = true
+  ignore_public_acls       = true
+  restrict_public_buckets  = true
+}
+
+
 # ===========================================
 # S3 bucket dành cho API model (ARF IDS)
 # ===========================================
 module "s3_api_model_bucket" {
   source = "../modules/s3_module"
 
-  bucket_name_value         = "arf-ids-model-bucket"
+  bucket_name_value         = "qmuit-mlflow-artifacts-store"
   versioning_enabled_value  = true
 
   # Public access block
@@ -124,6 +143,8 @@ module "s3_api_model_bucket" {
   ignore_public_acls        = true
   restrict_public_buckets   = true
 }
+
+
 
 # ===========================================
 # IAM policy cho phép đọc model từ S3 bucket
@@ -143,8 +164,8 @@ resource "aws_iam_policy" "arf_s3_model_access" {
           "s3:DeleteObject"
         ]
         Resource = [
-          "arn:aws:s3:::arf-ids-model-bucket",
-          "arn:aws:s3:::arf-ids-model-bucket/*"
+          "arn:aws:s3:::qmuit-mlflow-artifacts-store",
+          "arn:aws:s3:::qmuit-mlflow-artifacts-store/*"
         ]
       }
     ]
@@ -166,6 +187,7 @@ locals {
   eks_node_role_arn               = module.iam_module.eks_node_role_arn
   arf_s3_model_access_policy_arn  = aws_iam_policy.arf_s3_model_access.arn
   api_model_bucket_name           = module.s3_api_model_bucket.s3_bucket_bucket
+  training_data_bucket_name = module.s3_training_data_bucket.s3_bucket_bucket
 }
 
 module "eks" {
@@ -180,12 +202,11 @@ module "eks" {
   subnet_ids = concat(local.subnet_private_ids, local.subnet_public_ids)
   control_plane_subnet_ids = local.subnet_private_ids
 
-  # Dùng IAM roles từ infra
   create_iam_role = false
   iam_role_arn    = local.eks_cluster_role_arn
-
   enable_irsa = true
-  
+  enable_cluster_creator_admin_permissions = false
+
 
   eks_managed_node_groups = {
     api-nodes = {
@@ -194,9 +215,8 @@ module "eks" {
       min_size       = 1
       max_size       = 3
       force_update_version = true
-      instance_types = ["t2.medium"]
+      instance_types = ["c7i-flex.large"]
       capacity_type  = "ON_DEMAND"
-
       subnet_ids = local.subnet_private_ids
       create_iam_role = false
       iam_role_arn   = local.eks_node_role_arn
@@ -249,4 +269,33 @@ resource "aws_eks_access_policy_association" "admins" {
     module.eks,
     aws_eks_access_entry.admins
   ]
+}
+
+resource "aws_iam_policy" "ids_training_data_access" {
+  name = "ids-training-data-access"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket",
+          "s3:PutObject",
+          "s3:DeleteObject"
+        ],
+        Resource = [
+          "arn:aws:s3:::qmuit-training-data-store",
+          "arn:aws:s3:::qmuit-training-data-store/*"
+        ]
+      }
+    ]
+  })
+}
+resource "aws_iam_role_policy_attachment" "eks_node_training_data_access" {
+  role       = basename(module.eks.eks_managed_node_groups["api-nodes"].iam_role_arn)
+  policy_arn = aws_iam_policy.ids_training_data_access.arn
+
+  depends_on = [module.eks]
 }

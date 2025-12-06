@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "terraform-state-bucket-9999"
+    bucket = "terraform-state-bucket-99999"
     key    = "create-api-system/terraform.tfstate"
     region = "us-east-1"
   }
@@ -9,7 +9,7 @@ terraform {
 data "terraform_remote_state" "infra" {
   backend = "s3"
   config = {
-    bucket = "terraform-state-bucket-9999"
+    bucket = "terraform-state-bucket-99999"
     key    = "create-infrastructure/terraform.tfstate"
     region = "us-east-1"
   }
