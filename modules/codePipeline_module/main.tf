@@ -26,7 +26,7 @@ resource "aws_codepipeline" "codePipeline" {
       output_artifacts = ["SourceArtifact"]  # default CodePipeline output artifact
 
       configuration = {
-      ConnectionArn    = "arn:aws:codeconnections:us-east-1:897722710732:connection/307a5f14-e6a2-43ef-8704-ca2954559dc7"
+      ConnectionArn    = "arn:aws:codeconnections:us-east-1:947632013035:connection/0446ea36-63c1-4754-bb30-b6fd1417d110"
       FullRepositoryId = "Zquan315/KLTN-Log-system-app"
       BranchName       = "main"
 }
