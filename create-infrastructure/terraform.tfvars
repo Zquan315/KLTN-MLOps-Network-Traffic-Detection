@@ -105,7 +105,7 @@ ingress_rules_public_value = [
     to_port     = 8082
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "Access to port 8081 from anywhere for log - database"
+    description = "Access to port 8082 from anywhere for log - database"
   }
 ]
 

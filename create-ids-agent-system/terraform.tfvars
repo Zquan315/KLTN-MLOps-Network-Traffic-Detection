@@ -4,7 +4,7 @@ http_port_value = 80 # HTTP port for the Application Load Balancer
 
 # auto scaling group
 ami_id_value = "ami-0f9de6e2d2f067fca" # ubuntu 22.04 ami
-instance_type_value = "t3.medium" # t3.medium instance type
+instance_type_value = "t3.small" # t3.small instance type
 key_name_value = "KLTN" # my key pair name
 volume_size_value = 30
 volume_type_value = "gp2" # General Purpose SSD (gp2) volume type

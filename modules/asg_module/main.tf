@@ -86,7 +86,7 @@ resource "aws_autoscaling_policy" "scale_in_policy" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "cpu_high" {
-  alarm_name          = "cpu-high"
+  alarm_name          = "${var.asg_name}-cpu-high"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 2
   metric_name         = "CPUUtilization"
@@ -101,18 +101,62 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "cpu_low" {
-  alarm_name          = "cpu-low"
-  comparison_operator = "LessThanOrEqualToThreshold"
+
+# ==========================================
+# Memory-based Scaling Policies
+# ==========================================
+resource "aws_cloudwatch_metric_alarm" "memory_high" {
+  alarm_name          = "${var.asg_name}-memory-high"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 2
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
+  metric_name         = "mem_used_percent"
+  namespace           = "CWAgent"
+  period              = 120
+  statistic           = "Average"
+  threshold           = 80
+  alarm_description   = "Scale out when Memory usage >= 80%"
+  alarm_actions       = [aws_autoscaling_policy.scale_out_policy.arn]
+  treat_missing_data  = "notBreaching"
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.asg.name
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "memory_low" {
+  alarm_name          = "${var.asg_name}-memory-low"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = 3
+  metric_name         = "mem_used_percent"
+  namespace           = "CWAgent"
   period              = 120
   statistic           = "Average"
   threshold           = 50
-  alarm_description   = "Scale in when CPU <= 50%"
-  alarm_actions       = [aws_autoscaling_policy.scale_in_policy.arn]      
+  alarm_description   = "Scale in when Memory usage <= 40%"
+  alarm_actions       = [aws_autoscaling_policy.scale_in_policy.arn]
+  treat_missing_data  = "notBreaching"
   dimensions = {
     AutoScalingGroupName = aws_autoscaling_group.asg.name
+  }
+}
+
+# ==========================================
+# Disk-based Scaling Policies
+# ==========================================
+resource "aws_cloudwatch_metric_alarm" "disk_high" {
+  alarm_name          = "${var.asg_name}-disk-high"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "disk_used_percent"
+  namespace           = "CWAgent"
+  period              = 120
+  statistic           = "Average"
+  threshold           = 80
+  alarm_description   = "Scale out when Disk usage >= 80%"
+  alarm_actions       = [aws_autoscaling_policy.scale_out_policy.arn]
+  treat_missing_data  = "notBreaching"
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.asg.name
+    path                 = "/"
+    fstype               = "ext4"
   }
 }

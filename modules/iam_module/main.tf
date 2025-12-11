@@ -59,6 +59,33 @@ resource "aws_iam_role_policy" "ec2_dynamodb_access" {
   })
 }
 
+# ============================================================
+# Allow EC2 to send CloudWatch metrics for ASG scaling
+# ============================================================
+resource "aws_iam_role_policy" "ec2_cloudwatch_access" {
+  name = "EC2CloudWatchAccess"
+  role = aws_iam_role.ec2_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "cloudwatch:PutMetricData",
+          "ec2:DescribeVolumes",
+          "ec2:DescribeTags",
+          "logs:PutLogEvents",
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:DescribeLogStreams"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 
 
 resource "aws_iam_instance_profile" "instance_profile" {

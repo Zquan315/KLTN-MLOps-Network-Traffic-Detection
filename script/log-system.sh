@@ -7,6 +7,55 @@ sudo apt install -y docker.io docker-compose ruby-full wget curl build-essential
 sudo systemctl enable --now docker
 
 # ----------------------------------------------------------
+# 0. CloudWatch Agent for ASG Scaling Metrics
+# ----------------------------------------------------------
+echo "[+] Installing CloudWatch Agent..."
+wget -q https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb -O /tmp/cw-agent.deb
+sudo dpkg -i -E /tmp/cw-agent.deb
+rm /tmp/cw-agent.deb
+
+sudo cat > /opt/aws/amazon-cloudwatch-agent/etc/cloudwatch-config.json <<'CWCONFIG'
+{
+  "agent": {
+    "metrics_collection_interval": 60,
+    "run_as_user": "root"
+  },
+  "metrics": {
+    "namespace": "CWAgent",
+    "metrics_collected": {
+      "mem": {
+        "measurement": [
+          {"name": "mem_used_percent", "unit": "Percent"}
+        ],
+        "metrics_collection_interval": 60
+      },
+      "disk": {
+        "measurement": [
+          {"name": "used_percent", "rename": "disk_used_percent", "unit": "Percent"}
+        ],
+        "metrics_collection_interval": 60,
+        "resources": ["*"],
+        "ignore_file_system_types": ["sysfs", "devtmpfs", "tmpfs"]
+      }
+    },
+    "append_dimensions": {
+      "AutoScalingGroupName": "$${aws:AutoScalingGroupName}",
+      "InstanceId": "$${aws:InstanceId}"
+    },
+    "aggregation_dimensions": [["AutoScalingGroupName"]]
+  }
+}
+CWCONFIG
+
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+    -a fetch-config -m ec2 -s \
+    -c file:/opt/aws/amazon-cloudwatch-agent/etc/cloudwatch-config.json
+
+sudo systemctl enable amazon-cloudwatch-agent
+echo "[✓] CloudWatch Agent installed for Memory & Disk metrics"
+# ----------------------------------------------------------
+
+# ----------------------------------------------------------
 # 1. Node Exporter
 # ----------------------------------------------------------
 echo "[+] Installing Node Exporter..."

@@ -33,6 +33,7 @@ module "alb_module_monitoring" {
 
   routes = [
     { name = "prometheus", port = 9090, path_patterns = ["/prometheus", "/prometheus/*"], health_path = "/prometheus", matcher = "200-399" },
+    { name = "alertmanager", port = 9093, path_patterns = ["/alertmanager", "/alertmanager/*"], health_path = "/alertmanager", matcher = "200-399" },
     { name = "grafana", port = 3000, path_patterns = ["/"], health_path = "/", matcher = "200" },
     { name = "metrics-monitor", port = 9100, path_patterns = ["/metrics"], health_path = "/metrics", matcher = "200" }
   ]
@@ -73,6 +74,7 @@ module "asg_module_monitoring" {
   target_group_arns = [
     module.alb_module_monitoring.tg_arns["grafana"],
     module.alb_module_monitoring.tg_arns["prometheus"],
+    module.alb_module_monitoring.tg_arns["alertmanager"],
     module.alb_module_monitoring.tg_arns["metrics-monitor"]
   ]  
 }
