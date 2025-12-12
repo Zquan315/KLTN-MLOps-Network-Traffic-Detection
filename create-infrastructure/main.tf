@@ -200,7 +200,7 @@ module "eks" {
       min_size       = 1
       max_size       = 3
       force_update_version = true
-      instance_types = ["c7i-flex.large"]
+      instance_types = ["t3.large"]
       capacity_type  = "ON_DEMAND"
       subnet_ids = local.subnet_private_ids
       create_iam_role = false
