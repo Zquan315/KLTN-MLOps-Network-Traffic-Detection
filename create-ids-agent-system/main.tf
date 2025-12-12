@@ -52,8 +52,10 @@ module "alb_module_ids" {
   http_port             = var.http_port_value
 
   routes = [
-    { name = "web",     port = 5001, path_patterns = ["/"],        health_path = "/",      matcher = "200" },
-    { name = "metrics-ids", port = 9100, path_patterns = ["/metrics"], health_path = "/metrics", matcher = "200-399" }
+    { name = "web",     port = 5001, path_patterns = ["/"], health_path = "/", matcher = "200" },
+    { name = "metrics-ids", port = 9100, path_patterns = ["/metrics"], health_path = "/metrics", matcher = "200-399" },
+    { name = "history", port = 5001, path_patterns = ["/history"], health_path = "/", matcher = "200" },
+    { name = "metrics-redirection", port = 5001, path_patterns = ["/metrics/redirection*"], health_path = "/", matcher = "200" }
   ]
   default_route_name = "web"
 }
@@ -87,17 +89,9 @@ module "asg_module_ids" {
 
   target_group_arns = [
     module.alb_module_ids.tg_arns["web"],
-    module.alb_module_ids.tg_arns["metrics-ids"]
+    module.alb_module_ids.tg_arns["metrics-ids"],
+    module.alb_module_ids.tg_arns["history"],
+    module.alb_module_ids.tg_arns["metrics-redirection"]
   ]  
 
 }
-
-# module "route53_module_ids" {
-#   source = "../modules/route53_module"
-#   # Route 53
-#   route53_zone_name            = var.route53_zone_name_value
-#   route53_record_type          = var.route53_record_type_value
-#   route53_record_alias_name    = module.alb_module_ids.alb_dns_name
-#   route53_record_alias_zone_id = module.alb_module_ids.alb_zone_id
-  
-# }

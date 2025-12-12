@@ -51,7 +51,9 @@ resource "aws_iam_role_policy" "ec2_dynamodb_access" {
           "dynamodb:PutItem",
           "dynamodb:GetItem",
           "dynamodb:Scan",
-          "dynamodb:DescribeTable"
+          "dynamodb:DescribeTable",
+          "dynamodb:UpdateItem",
+          "dynamodb:Query",
         ],
         Resource = "arn:aws:dynamodb:us-east-1:${data.aws_caller_identity.current.account_id}:table/${var.table_name_value}"
       }
@@ -324,5 +326,61 @@ resource "aws_iam_role_policy_attachment" "eks_node_AmazonEC2ContainerRegistryRe
 resource "aws_iam_role_policy_attachment" "eks_node_CloudWatchAgentServerPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
   role       = aws_iam_role.eks_node_role.name
+}
+
+# S3 access for model artifacts
+resource "aws_iam_role_policy" "eks_node_s3_access" {
+  name = "EKSNodeS3ModelAccess"
+  role = aws_iam_role.eks_node_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "ListModelBucket"
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket"
+        ]
+        Resource = "arn:aws:s3:::arf-ids-model-bucket"
+        Condition = {
+          StringLike = {
+            "s3:prefix" = [
+              "models/*"
+            ]
+          }
+        }
+      },
+      {
+        Sid    = "ReadModelArtifacts"
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:GetObjectVersion"
+        ]
+        Resource = "arn:aws:s3:::arf-ids-model-bucket/models/*"
+      }
+    ]
+  })
+}
+
+# CloudWatch Logs access for container logs
+resource "aws_iam_role_policy" "eks_node_cloudwatch_logs" {
+  name = "EKSNodeCloudWatchLogs"
+  role = aws_iam_role.eks_node_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogStreams"
+      ]
+      Resource = "arn:aws:logs:*:*:*"
+    }]
+  })
 }
 

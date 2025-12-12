@@ -96,169 +96,344 @@ sudo chown ubuntu:ubuntu requirements.txt
 sudo -u ubuntu /home/ubuntu/venv/bin/pip install -r requirements.txt
 
 # ============================================
-# HONEYPOT APPLICATION
+# HONEYPOT APPLICATION (IMPROVED)
 # ============================================
 cat > /home/ubuntu/honeypot_app.py <<'PYTHON'
+#!/usr/bin/env python3
+
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from datetime import datetime, timezone, timedelta
+from pathlib import Path
 import json
 import csv
-from pathlib import Path
 import logging
+from typing import Dict, Any
 
-# Logging
+# ==================== LOGGING CONFIG ====================
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s'
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[
+        logging. StreamHandler(),
+        logging.FileHandler('/home/ubuntu/logs/honeypot.log')
+    ]
+)
+logger = logging.getLogger(__name__)
+
+# ==================== FASTAPI APP ====================
+app = FastAPI(
+    title="ARF IDS Honeypot System",
+    description="Decoy system for attack traffic analysis",
+    version="2.0.0"
 )
 
-app = FastAPI(title="Honeypot System", version="1.0.0")
-
-LOGS_DIR = Path("/home/ubuntu/logs")
+# ==================== CONFIG ====================
+LOGS_DIR = Path("/home/ubuntu/logs/attacks")
 LOGS_DIR.mkdir(exist_ok=True, parents=True)
 
-@app.get("/")
-async def root():
-    return {
-        "status": "active",
-        "service": "ARF IDS Honeypot",
-        "message": "This is a decoy system for attack traffic analysis",
-        "timestamp": datetime.now().isoformat()
-    }
+STATS_FILE = Path("/home/ubuntu/logs/honeypot_stats.json")
 
-@app.get("/health")
-async def health():
-    return {"status": "healthy"}
+# ==================== STATS TRACKING ====================
+attack_stats = {
+    "total_received": 0,
+    "by_protocol": {},
+    "by_src_ip": {},
+    "by_dst_port": {},
+    "by_date": {},
+    "high_confidence_attacks": 0,  # IDS confidence > 0.9
+    "start_time": datetime.now(timezone. utc).isoformat(),
+    "last_attack_time": None
+}
 
-@app.post("/receive_attack")
-async def receive_attack(flow: dict):
-    """Receive redirected attack traffic from IDS"""
+def load_stats():
+    """Load stats from file if exists"""
+    global attack_stats
+    if STATS_FILE.exists():
+        try:
+            with open(STATS_FILE, 'r') as f:
+                attack_stats = json.load(f)
+            logger.info(f"[STATS] Loaded:   {attack_stats['total_received']} total attacks")
+        except Exception as e:
+            logger.warning(f"[STATS] Failed to load:  {e}, using defaults")
+
+def save_stats():
+    """Save stats to file"""
     try:
-        # Get today's log file
-        dt_vn = datetime.now(timezone(timedelta(hours=7)))
-        today = dt_vn.strftime("%Y%m%d")
-        timestamp = dt_vn.strftime('%Y-%m-%d %H:%M:%S')  # UTC+7
-        log_file = LOGS_DIR / f"attack_traffic_{today}.csv"
-        
-        # Extract flow data
-        flow_id = flow.get("Flow ID") or flow.get("flow_id", "unknown")
+        with open(STATS_FILE, 'w') as f:
+            json.dump(attack_stats, f, indent=2)
+    except Exception as e:
+        logger.error(f"[STATS] Save failed: {e}")
 
-        # Prepare row
-        row = {
-            "timestamp": timestamp,
-            "flow_id": flow.get("Flow ID", ""),
+# Load stats on startup
+load_stats()
+
+# ==================== HELPER FUNCTIONS ====================
+def extract_flow_metadata(flow: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Extract metadata from flow data
+    Supports both old format (direct features) and new format (enriched metadata)
+    """
+    # Check if new format (with redirection_metadata)
+    if "redirection_metadata" in flow or "ids_label" in flow:
+        # New enriched format from updated IDS
+        return {
+            "flow_id":  flow.get("flow_id", flow.get("Flow ID", "unknown")),
+            "src_ip": flow.get("src_ip", flow.get("Source IP", "")),
+            "src_port":  flow.get("src_port", flow.get("Source Port", "")),
+            "dst_ip":  flow.get("dst_ip", flow.get("Destination IP", "")),
+            "dst_port": flow.get("dst_port", flow.get("Destination Port", "")),
+            "protocol":  flow.get("protocol", flow. get("Protocol", "")),
+            "ids_label": flow.get("ids_label", "ATTACK"),
+            "ids_confidence": flow.get("ids_confidence", 0.0),
+            "detection_time": flow.get("detection_timestamp", flow.get("timestamp_utc", "")),
+            "redirection_method": flow.get("redirection_method", "UNKNOWN"),
+            "session_metadata": flow.get("session_metadata", {})
+        }
+    else: 
+        # Old format (backward compatibility)
+        return {
+            "flow_id": flow.get("Flow ID", "unknown"),
             "src_ip": flow.get("Source IP", ""),
             "src_port": flow.get("Source Port", ""),
             "dst_ip": flow.get("Destination IP", ""),
             "dst_port": flow.get("Destination Port", ""),
             "protocol": flow.get("Protocol", ""),
-            "label": "ATTACK",
-            "content": f"{flow.get('Source IP')}:{flow.get('Source Port')} → {flow.get('Destination IP')}:{flow.get('Destination Port')} ({flow.get('Protocol', 'TCP')})",
-            "features_json": json.dumps(flow)
+            "ids_label": "ATTACK",
+            "ids_confidence": 0.0,
+            "detection_time": "",
+            "redirection_method":  "LEGACY_FORMAT",
+            "session_metadata":  {}
+        }
+
+# ==================== MAIN ENDPOINTS ====================
+@app.get("/")
+async def root():
+    """Root endpoint - honeypot identification"""
+    return {
+        "status": "active",
+        "service": "ARF IDS Honeypot",
+        "Author": "QuanTC & MinhBQ",
+        "message": "This is a decoy system for attack traffic analysis",
+        "reference": "Beltran Lopez et al. (2024) - arXiv:2402.09191v2",
+    }
+
+@app.get("/health")
+async def health():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "service": "honeypot",
+        "uptime_since":  attack_stats["start_time"],
+        "total_attacks_logged": attack_stats["total_received"]
+    }
+
+@app.post("/receive_attack")
+async def receive_attack(flow: dict):
+    """
+    Receive redirected attack traffic from IDS
+    
+    Expected JSON payload (new enriched format):
+      - flow_id:   Unique flow identifier
+      - src_ip, src_port, dst_ip, dst_port, protocol:   5-tuple
+      - ids_label, ids_confidence:  IDS classification
+      - detection_timestamp:  When IDS detected the attack
+      - redirection_method:  How traffic was redirected
+      - session_metadata: Session information (packets, bytes, flags)
+      - flow_features: Full flow features (optional)
+    
+    Also supports legacy format for backward compatibility. 
+    """
+    try:  
+        # Extract metadata (supports both old and new format)
+        metadata = extract_flow_metadata(flow)
+        
+        flow_id = metadata["flow_id"]
+        src_ip = metadata["src_ip"]
+        src_port = metadata["src_port"]
+        dst_ip = metadata["dst_ip"]
+        dst_port = metadata["dst_port"]
+        protocol = metadata["protocol"]
+        ids_confidence = metadata["ids_confidence"]
+        
+        # Get current time in UTC+7 (Vietnam)
+        dt_vn = datetime.now(timezone(timedelta(hours=7)))
+        date_str = dt_vn. strftime('%Y%m%d')
+        timestamp = dt_vn.strftime('%Y-%m-%d %H:%M:%S')
+        
+        # Prepare log entry
+        session_meta = metadata.get("session_metadata", {})
+        
+        log_entry = {
+            "honeypot_receive_time": timestamp,
+            "flow_id": flow_id,
+            "src_ip": src_ip,
+            "src_port": src_port,
+            "dst_ip": dst_ip,
+            "dst_port":  dst_port,
+            "protocol": protocol,
+            "ids_label": metadata["ids_label"],
+            "ids_confidence": round(ids_confidence, 4),
+            "detection_time":  metadata["detection_time"],
+            "redirection_method": metadata["redirection_method"],
+            "total_packets": session_meta.get("total_packets", 0),
+            "total_bytes": session_meta.get("total_bytes", 0),
+            "flow_duration_ms": session_meta.get("flow_duration_ms", 0),
+            "tcp_syn":  session_meta.get("tcp_flags", {}).get("SYN", 0),
+            "tcp_fin": session_meta.get("tcp_flags", {}).get("FIN", 0),
+            "tcp_rst": session_meta. get("tcp_flags", {}).get("RST", 0)
         }
         
-        # Write to CSV
-        file_exists = log_file.exists()
-        with open(log_file, "a", newline="", encoding="utf-8") as f:
-            fieldnames = ["flow_id", "timestamp", "src_ip", "src_port", "dst_ip", 
-                        "dst_port", "protocol", "label", "content", "features_json"]
+        # Write to dated CSV file
+        csv_file = LOGS_DIR / f"attacks_{date_str}.csv"
+        is_new_file = not csv_file.exists()
+        
+        with open(csv_file, 'a', newline='', encoding='utf-8') as f:
+            fieldnames = [
+                "honeypot_receive_time", "flow_id", "src_ip", "src_port",
+                "dst_ip", "dst_port", "protocol", "ids_label", "ids_confidence",
+                "detection_time", "redirection_method", "total_packets",
+                "total_bytes", "flow_duration_ms", "tcp_syn", "tcp_fin", "tcp_rst"
+            ]
             writer = csv.DictWriter(f, fieldnames=fieldnames)
-                
-            if not file_exists:
+            
+            if is_new_file:
                 writer.writeheader()
-                
-            writer.writerow(row)
+                logger.info(f"[CSV] Created new file: {csv_file}")
             
-        logging.info(f"[HONEYPOT] Logged attack flow: {flow_id}")
-            
+            writer.writerow(log_entry)
+        
+        # Update stats
+        attack_stats["total_received"] += 1
+        attack_stats["last_attack_time"] = datetime.now(timezone.utc).isoformat()
+        
+        # By protocol
+        attack_stats["by_protocol"][protocol] = attack_stats["by_protocol"].get(protocol, 0) + 1
+        
+        # By source IP
+        attack_stats["by_src_ip"][src_ip] = attack_stats["by_src_ip"].get(src_ip, 0) + 1
+        
+        # By destination port
+        attack_stats["by_dst_port"][str(dst_port)] = attack_stats["by_dst_port"]. get(str(dst_port), 0) + 1
+        
+        # By date
+        attack_stats["by_date"][date_str] = attack_stats["by_date"].get(date_str, 0) + 1
+        
+        # High confidence attacks
+        if ids_confidence > 0.9:
+            attack_stats["high_confidence_attacks"] = attack_stats. get("high_confidence_attacks", 0) + 1
+        
+        # Save stats every 10 attacks
+        if attack_stats["total_received"] % 10 == 0:
+            save_stats()
+        
+        # Log
+        logger.info(
+            f"[✓ RECEIVED] Flow {flow_id[: 16]}...  | "
+            f"{src_ip}:{src_port} → {dst_ip}:{dst_port} | "
+            f"Proto: {protocol} | "
+            f"Confidence: {ids_confidence:.2%} | "
+            f"Method: {metadata['redirection_method']}"
+        )
+        
         return {
-            "status": "logged",
-            "flow_id": flow_id,
-            "timestamp": timestamp,
-            "log_file": str(log_file)
+            "status": "received",
+            "flow_id":  flow_id,
+            "honeypot_time": timestamp,
+            "logged_to":   str(csv_file),
+            "total_attacks_received": attack_stats["total_received"]
         }
-    except Exception as e:
-        logging.error(f"[HONEYPOT] Error logging attack flow: {e}")
-        raise HTTPException(status_code=500, detail="Error logging attack flow")
-
-@app.get("/stats")
-async def get_stats():
-    """Get honeypot statistics"""
-    today = datetime.now().strftime("%Y%m%d")
-    log_file = LOGS_DIR / f"attack_traffic_{today}.csv"
-    
-    if not log_file.exists():
-        return {
-            "date": today,
-            "count": 0,
-            "file": str(log_file),
-            "size_bytes": 0
-        }
-    
-    with open(log_file, "r") as f:
-        count = sum(1 for _ in f) - 1  # Exclude header
-    file_size = log_file.stat().st_size
-
-    return {
-        "count": count,
-        "date": today,
-        "file": str(log_file),
-        "size_bytes": file_size,
-        "size_mb": round(file_size / 1024 / 1024, 2)
-    }
+        
+    except Exception as e: 
+        logger.error(f"[ERROR] Failed to process attack: {e}")
+        raise HTTPException(status_code=500, detail=f"Error logging attack: {str(e)}")
 
 @app.get("/logs/{date}")
 async def download_logs(date: str):
-    """
-    Download logs for a specific date
-    Format: YYYYMMDD (e.g., 20251116)
-    """
     # Validate date format
     try:
         datetime.strptime(date, "%Y%m%d")
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYYMMDD")
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid date format. Use YYYYMMDD (e.g., 20250113)"
+        )
     
-    log_file = LOGS_DIR / f"attack_traffic_{date}.csv"
+    csv_file = LOGS_DIR / f"attacks_{date}.csv"
     
-    if not log_file.exists():
-        raise HTTPException(status_code=404, detail=f"Log file for {date} not found")
+    if not csv_file.exists():
+        # Get available dates
+        available = [f.stem.replace("attacks_", "") for f in LOGS_DIR.glob("attacks_*.csv")]
+        raise HTTPException(
+            status_code=404,
+            detail=f"Log file for {date} not found. Available dates: {available}"
+        )
     
     return FileResponse(
-        path=log_file,
-        filename=f"attack_traffic_{date}.csv",
+        path=csv_file,
+        filename=f"attacks_{date}.csv",
         media_type="text/csv"
     )
 
-# ============================================
-# LIST ALL LOG FILES
-# ============================================
-@app.get("/logs")
+@app.get("/logs/list")
 async def list_logs():
-    """List all available log files"""
-    log_files = sorted(LOGS_DIR.glob("attack_traffic_*.csv"))
+    log_files = sorted(LOGS_DIR.glob("attacks_*.csv"))
     
     files_info = []
-    for log_file in log_files:
-        # Extract date from filename
-        date_str = log_file.stem.replace("attack_traffic_", "")
+    for log_file in log_files: 
+        date_str = log_file.stem.replace("attacks_", "")
         
-        with open(log_file, "r") as f:
-            count = sum(1 for _ in f) - 1  # Exclude header
+        # Count lines (attacks)
+        try:
+            with open(log_file, "r") as f:
+                count = sum(1 for _ in f) - 1  # Exclude header
+        except:
+            count = 0
         
         files_info.append({
-            "date": date_str,
+            "date":  date_str,
             "filename": log_file.name,
-            "count": count,
+            "attack_count": count,
             "size_bytes": log_file.stat().st_size,
+            "size_mb": round(log_file.stat().st_size / 1024 / 1024, 2),
             "download_url": f"/logs/{date_str}"
         })
     
     return {
         "total_files": len(files_info),
+        "total_attacks_across_all_files": sum(f["attack_count"] for f in files_info),
         "files": files_info
     }
+
+@app.get("/stats")
+async def get_today_stats():
+    """Get statistics for today only"""
+    today = datetime.now(timezone(timedelta(hours=7))).strftime("%Y%m%d")
+    csv_file = LOGS_DIR / f"attacks_{today}.csv"
+    
+    if not csv_file.exists():
+        return {
+            "date": today,
+            "attack_count": 0,
+            "file_exists": False
+        }
+    
+    # Count attacks
+    with open(csv_file, "r") as f:
+        count = sum(1 for _ in f) - 1
+    
+    # Get file size
+    file_size = csv_file.stat().st_size
+    
+    return {
+        "date": today,
+        "attack_count":  count,
+        "file_exists": True,
+        "file_size_bytes": file_size,
+        "file_size_mb": round(file_size / 1024 / 1024, 2),
+        "download_url": f"/logs/{today}"
+    }
+
 
 PYTHON
 
