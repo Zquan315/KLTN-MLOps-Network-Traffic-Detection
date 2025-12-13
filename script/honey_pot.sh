@@ -372,38 +372,13 @@ async def download_logs(date: str):
     return FileResponse(
         path=csv_file,
         filename=f"attacks_{date}.csv",
-        media_type="text/csv"
+        media_type="text/csv",
+        headers={
+            "Content-Disposition":  f"attachment; filename=attacks_{date}.csv",
+            "Cache-Control": "no-cache"
+        }
     )
 
-@app.get("/logs/list")
-async def list_logs():
-    log_files = sorted(LOGS_DIR.glob("attacks_*.csv"))
-    
-    files_info = []
-    for log_file in log_files: 
-        date_str = log_file.stem.replace("attacks_", "")
-        
-        # Count lines (attacks)
-        try:
-            with open(log_file, "r") as f:
-                count = sum(1 for _ in f) - 1  # Exclude header
-        except:
-            count = 0
-        
-        files_info.append({
-            "date":  date_str,
-            "filename": log_file.name,
-            "attack_count": count,
-            "size_bytes": log_file.stat().st_size,
-            "size_mb": round(log_file.stat().st_size / 1024 / 1024, 2),
-            "download_url": f"/logs/{date_str}"
-        })
-    
-    return {
-        "total_files": len(files_info),
-        "total_attacks_across_all_files": sum(f["attack_count"] for f in files_info),
-        "files": files_info
-    }
 
 @app.get("/stats")
 async def get_today_stats():
