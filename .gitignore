@@ -18,8 +18,8 @@ crash.log
 *.terraform.lock.hcl
 # bỏ pem
 *.pem
-# bỏ qua thư mục test và file notice
-test_*/
+# bỏ qua thư mục file csv
+*.csv
 # Chỉ theo dõi file .tf và .tfvars
 !*.tf
 !*.tfvars

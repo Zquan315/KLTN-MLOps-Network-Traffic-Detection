@@ -26,10 +26,10 @@ resource "aws_lb_target_group" "tg" {
     path                = each.value.health_path
     protocol            = "HTTP"
     matcher             = coalesce(try(each.value.matcher, null), "200")
-    interval            = 30
-    timeout             = 5
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
+    interval            = 60              # Tăng interval lên 60s
+    timeout             = 10              # Tăng timeout lên 10s
+    healthy_threshold   = 2               # Cần 2 lần pass mới healthy
+    unhealthy_threshold = 5               # Cần 5 lần fail mới unhealthy (tránh terminate sớm)
   }
 
   stickiness {

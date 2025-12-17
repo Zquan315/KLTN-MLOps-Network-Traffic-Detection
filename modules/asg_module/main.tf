@@ -51,7 +51,17 @@ resource "aws_autoscaling_group" "asg" {
   }
 
   health_check_type         = "ELB"
-  health_check_grace_period = 900
+  health_check_grace_period = 1200 
+  
+  # Termination policies - ưu tiên giữ instances mới nhất
+  termination_policies = ["NewestInstance", "Default"]
+  
+  # Wait for capacity timeout - chờ instances healthy
+  wait_for_capacity_timeout = "15m"
+  
+  # Force delete - tránh stuck khi destroy
+  force_delete = true
+  
   depends_on = [var.target_group_arns ]
 }
 

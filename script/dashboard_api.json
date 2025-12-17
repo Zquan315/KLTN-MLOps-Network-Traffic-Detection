@@ -93,36 +93,61 @@
         "overrides": []
       }
     },
+
+
     {
       "type": "stat",
-      "title": "Feedback Rate (req/s)",
-      "id": 3,
+      "title": "Model Reload Count",
+      "id": 16,
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
       "targets": [
         {
-          "expr": "sum(rate(feedback_requests_total{job=~\"$job\", instance=~\"$instance\"}[5m]))",
-          "legendFormat": "feedback/s",
+          "expr": "sum(model_reload_total{job=~\"$job\", instance=~\"$instance\"})",
           "refId": "A"
         }
       ],
-      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 6 },
-      "options": {
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
-        "orientation": "auto",
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto"
-      },
       "fieldConfig": {
         "defaults": {
-          "unit": "reqps",
-          "thresholds": { "mode": "absolute", "steps": [ { "color": "green" } ] }
+          "unit": "short"
         },
         "overrides": []
-      }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"]
+        }
+      },
+      "gridPos": { "x": 8, "y": 39, "w": 8, "h": 6 }
+    },
+    {
+      "type": "stat",
+      "title": "Current Model Version",
+      "id": 15,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "targets": [
+        {
+          "expr": "model_version{job=~\"$job\", instance=~\"$instance\"}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"]
+        }
+      },
+      "gridPos": { "x": 16, "y": 39, "w": 8, "h": 6 }
     },
     {
       "type": "timeseries",
@@ -290,22 +315,6 @@
     },
     {
       "type": "stat",
-      "title": "Model Learn Rate (updates/s)",
-      "id": 12,
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-      "targets": [
-        {
-          "expr": "sum(rate(model_learn_total{job=~\"$job\", instance=~\"$instance\"}[5m]))",
-          "legendFormat": "learn/s",
-          "refId": "A"
-        }
-      ],
-      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
-      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
-      "gridPos": { "x": 0, "y": 39, "w": 8, "h": 6 }
-    },
-    {
-      "type": "stat",
       "title": "Total Predictions (cumulative)",
       "id": 13,
       "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
@@ -320,24 +329,8 @@
       "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
       "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
       "gridPos": { "x": 8, "y": 39, "w": 8, "h": 6 }
-    },
-    {
-      "type": "stat",
-      "title": "Total Feedback (cumulative)",
-      "id": 14,
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-      "targets": [
-        {
-          "expr": "sum(feedback_requests_total{job=~\"$job\", instance=~\"$instance\"})",
-          "legendFormat": "total",
-          "refId": "A",
-          "instant": true
-        }
-      ],
-      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
-      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
-      "gridPos": { "x": 16, "y": 39, "w": 8, "h": 6 }
     }
+    
   ],
   "refresh": "10s",
   "schemaVersion": 39,
