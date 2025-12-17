@@ -55,7 +55,7 @@ module "alb_module_ids" {
     { name = "web",     port = 5001, path_patterns = ["/"], health_path = "/", matcher = "200" },
     { name = "metrics-ids", port = 9100, path_patterns = ["/metrics"], health_path = "/metrics", matcher = "200-399" },
     { name = "history", port = 5001, path_patterns = ["/history"], health_path = "/", matcher = "200" },
-    { name = "metrics-redirection", port = 5001, path_patterns = ["/metrics/redirection*"], health_path = "/", matcher = "200" }
+    { name = "metrics-redirection", port = 5001, path_patterns = ["/redirection/*"], health_path = "/", matcher = "200" }
   ]
   default_route_name = "web"
 }
