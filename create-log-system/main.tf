@@ -24,8 +24,8 @@ module "alb_module_logs" {
   load_balancer_type    = var.load_balancer_type_value
   alb_security_group_id = [data.terraform_remote_state.infra.outputs.sg_alb_id]
   public_subnet_ids     = [
-    data.terraform_remote_state.infra.outputs.subnet_public_ids[0],
-    data.terraform_remote_state.infra.outputs.subnet_public_ids[2]
+    data.terraform_remote_state.infra.outputs.subnet_public_ids[2],
+    data.terraform_remote_state.infra.outputs.subnet_public_ids[3]
   ]
 
   vpc_id                = data.terraform_remote_state.infra.outputs.vpc_id
@@ -59,8 +59,8 @@ module "asg_module_logs" {
   user_data_path            = var.user_data_path_value 
 
   subnet_ids                = [
-    data.terraform_remote_state.infra.outputs.subnet_public_ids[0],
-    data.terraform_remote_state.infra.outputs.subnet_public_ids[2]
+    data.terraform_remote_state.infra.outputs.subnet_public_ids[2],
+    data.terraform_remote_state.infra.outputs.subnet_public_ids[3]
   ]
 
   target_group_arns = [
@@ -69,16 +69,6 @@ module "asg_module_logs" {
     module.alb_module_logs.tg_arns["metrics-log"]
   ]  
 }
-
-# module "route53_module_logs" {
-#   source = "../modules/route53_module"
-#   # Route 53
-#   route53_zone_name            = var.route53_zone_name_value
-#   route53_record_type          = var.route53_record_type_value
-#   route53_record_alias_name    = module.alb_module_logs.alb_dns_name
-#   route53_record_alias_zone_id = module.alb_module_logs.alb_zone_id
-  
-# }
 
 # Create CodeDeploy application and deployment group
 module "codeDeploy_module" {

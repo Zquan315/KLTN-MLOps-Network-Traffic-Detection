@@ -78,13 +78,3 @@ module "asg_module_monitoring" {
     module.alb_module_monitoring.tg_arns["metrics-monitor"]
   ]  
 }
-
-# module "route53_module_monitoring" {
-#   source = "../modules/route53_module"
-#   # Route 53
-#   route53_zone_name            = var.route53_zone_name_value
-#   route53_record_type          = var.route53_record_type_value
-#   route53_record_alias_name    = module.alb_module_monitoring.alb_dns_name
-#   route53_record_alias_zone_id = module.alb_module_monitoring.alb_zone_id
-  
-# }
