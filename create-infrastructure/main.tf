@@ -197,10 +197,10 @@ module "eks" {
     api-nodes = {
       name           = "api"
       desired_size   = 2
-      min_size       = 1
-      max_size       = 3
+      min_size       = 2
+      max_size       = 4
       force_update_version = true
-      instance_types = ["t3.large"]
+      instance_types = ["m5.large"]
       capacity_type  = "ON_DEMAND"
       subnet_ids = local.subnet_private_ids
       create_iam_role = false

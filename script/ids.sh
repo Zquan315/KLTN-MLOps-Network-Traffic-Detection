@@ -122,7 +122,17 @@ export EMAIL_LAMBDA_URL="${EMAIL_LAMBDA_URL}"
 # ==========================================================
 sudo -E -u ubuntu bash -c "
   export EMAIL_LAMBDA_URL='$EMAIL_LAMBDA_URL'
-  nohup python3 application.py > /home/ubuntu/logs/ids_agent.log 2>&1 &
+  nohup gunicorn application:app \
+  -k gthread \
+  --workers 6 \
+  --threads 4 \
+  --bind 0.0.0.0:5001 \
+  --timeout 60 \
+  --keep-alive 5 \
+  --access-logfile /home/ubuntu/logs/access.log \
+  --error-logfile /home/ubuntu/logs/error.log \
+  --log-level info \
+  > /home/ubuntu/logs/gunicorn.log 2>&1 &
 "
 sleep 3
 
