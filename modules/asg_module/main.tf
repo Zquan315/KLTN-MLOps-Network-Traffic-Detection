@@ -10,7 +10,6 @@ resource "aws_launch_template" "launch_template" {
 
   network_interfaces {
     associate_public_ip_address = var.associate_public_ip_address
-    subnet_id                   = var.subnet_id_public
     security_groups             = var.security_group_id_public
   }
 

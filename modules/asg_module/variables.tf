@@ -24,11 +24,6 @@ variable "associate_public_ip_address" {
   default     = true
 }
 
-variable "subnet_id_public" {
-  description = "The public subnet ID for the ASG instances."
-  type        = string
-}
-
 variable "security_group_id_public" {
   description = "The security group ID for the ASG instances."
   type        = list(string)

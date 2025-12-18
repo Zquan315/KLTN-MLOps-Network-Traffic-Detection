@@ -48,7 +48,6 @@ module "asg_module_monitoring" {
   instance_type             = var.instance_type_value
   key_name                  = var.key_name_value
   ec2_instance_profile_name = data.terraform_remote_state.infra.outputs.instance_profile_name
-  subnet_id_public          = data.terraform_remote_state.infra.outputs.subnet_public_ids[1]
   security_group_id_public  = [data.terraform_remote_state.infra.outputs.security_group_public_id]
   volume_size               = var.volume_size_value
   volume_type               = var.volume_type_value
