@@ -322,7 +322,7 @@ services:
     volumes:
       - /opt/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - /opt/monitoring/rules:/etc/prometheus/rules:ro
-      - prometheus_data:/prometheus
+      - /opt/monitoring/prometheus_data:/prometheus
     ports:
       - "9090:9090"
     restart: unless-stopped
@@ -339,7 +339,7 @@ services:
       - --web.route-prefix=/alertmanager
     volumes:
       - /opt/monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
-      - alertmanager_data:/alertmanager
+      - /opt/monitoring/alertmanager_data:/alertmanager
     ports:
       - "9093:9093"
     restart: unless-stopped
@@ -347,6 +347,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
+    user: "472:472"
     environment:
       - GF_SERVER_ROOT_URL=http://monitoring.qmuit.id.vn
       - GF_SERVER_SERVE_FROM_SUB_PATH=false
@@ -354,14 +355,17 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin123
       - GF_SECURITY_ADMIN_PASSWORD_CHANGE_REQUIRED=false
       - GF_AUTH_LDAP_ENABLED=false
+      - GF_PATHS_DATA=/var/lib/grafana
+      - GF_PATHS_LOGS=/var/log/grafana
+      - GF_PATHS_PLUGINS=/var/lib/grafana/plugins
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
     ports:
       - "3000:3000"
     volumes:
-      - grafana_data:/var/lib/grafana
+      - /opt/monitoring/grafana_data:/var/lib/grafana
     restart: unless-stopped
 volumes:
   prometheus_data:
-  grafana_data:
   alertmanager_data:
 YAML
 
