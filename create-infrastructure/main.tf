@@ -278,9 +278,44 @@ resource "aws_iam_policy" "ids_training_data_access" {
     ]
   })
 }
+
 resource "aws_iam_role_policy_attachment" "eks_node_training_data_access" {
   role       = basename(module.eks.eks_managed_node_groups["api-nodes"].iam_role_arn)
   policy_arn = aws_iam_policy.ids_training_data_access.arn
 
   depends_on = [module.eks]
 }
+
+
+# ===========================================
+# IAM policy cho phép EKS node access DynamoDB
+# ===========================================
+resource "aws_iam_policy" "ids_dynamodb_access" {
+  name = "ids-dynamodb-access"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:Scan",
+          "dynamodb:UpdateItem",
+          "dynamodb:Query",
+          "dynamodb:DescribeTable",
+          "dynamodb:GetItem"
+        ],
+        Resource = "arn:aws:dynamodb:us-east-1:947632013035:table/ids_log_system"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "eks_node_dynamodb_access" {
+  role       = basename(module.eks.eks_managed_node_groups["api-nodes"].iam_role_arn)
+  policy_arn = aws_iam_policy.ids_dynamodb_access.arn
+
+  depends_on = [module.eks]
+}
+
