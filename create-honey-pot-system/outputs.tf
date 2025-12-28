@@ -3,7 +3,7 @@ output "alb_dns_name" {
 }
 
 output "honeypot_url" {
-  value = "http://honeypot.qmuit.id.vn"
+  value = "https://honeypot.qmuit.id.vn"
 }
 
 output "email_api_endpoint" {

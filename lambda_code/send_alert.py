@@ -29,7 +29,7 @@ def lambda_handler(event, context):
         dt_vn = dt_naive.replace(tzinfo=timezone(timedelta(hours=7)))
         
     date_str = dt_vn.strftime('%Y%m%d')
-    download_link = f"http://honeypot.qmuit.id.vn/logs/{date_str}"
+    download_link = f"https://honeypot.qmuit.id.vn/logs/{date_str}"
         
     download_section = f"""
         <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">

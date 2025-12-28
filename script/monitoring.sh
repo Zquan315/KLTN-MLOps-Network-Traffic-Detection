@@ -317,7 +317,7 @@ services:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
       - --storage.tsdb.retention.time=15d
-      - --web.external-url=http://monitoring.qmuit.id.vn/prometheus
+      - --web.external-url=https://monitoring.qmuit.id.vn/prometheus
       - --web.route-prefix=/prometheus
     volumes:
       - /opt/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
@@ -335,7 +335,7 @@ services:
     command:
       - --config.file=/etc/alertmanager/alertmanager.yml
       - --storage.path=/alertmanager
-      - --web.external-url=http://monitoring.qmuit.id.vn/alertmanager
+      - --web.external-url=https://monitoring.qmuit.id.vn/alertmanager
       - --web.route-prefix=/alertmanager
     volumes:
       - /opt/monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
@@ -349,7 +349,7 @@ services:
     container_name: grafana
     user: "472:472"
     environment:
-      - GF_SERVER_ROOT_URL=http://monitoring.qmuit.id.vn
+      - GF_SERVER_ROOT_URL=https://monitoring.qmuit.id.vn
       - GF_SERVER_SERVE_FROM_SUB_PATH=false
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin123
