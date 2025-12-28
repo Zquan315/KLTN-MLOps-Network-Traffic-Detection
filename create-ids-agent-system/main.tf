@@ -36,20 +36,29 @@ data "terraform_remote_state" "api_system" {
   }
 }
 
+data "aws_acm_certificate" "ids" {
+  domain      = "*.qmuit.id.vn"
+  statuses    = ["ISSUED"]
+  most_recent = true
+}
+
+
 
 # Create ALB and Target Groups 
 module "alb_module_ids" {
   source = "../modules/alb_module"
-  alb_name              = "alb-ids" 
+
+  alb_name              = "alb-ids"
   load_balancer_type    = var.load_balancer_type_value
   alb_security_group_id = [data.terraform_remote_state.infra.outputs.sg_alb_id]
-  public_subnet_ids     = [
+
+  public_subnet_ids = [
     data.terraform_remote_state.infra.outputs.subnet_public_ids[0],
     data.terraform_remote_state.infra.outputs.subnet_public_ids[1]
   ]
 
-  vpc_id                = data.terraform_remote_state.infra.outputs.vpc_id
-  http_port             = var.http_port_value
+  vpc_id          = data.terraform_remote_state.infra.outputs.vpc_id
+  certificate_arn = data.aws_acm_certificate.ids.arn
 
   routes = [
     { name = "web",     port = 5001, path_patterns = ["/"], health_path = "/", matcher = "200" },

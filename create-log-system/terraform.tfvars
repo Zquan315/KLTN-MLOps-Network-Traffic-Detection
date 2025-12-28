@@ -1,7 +1,6 @@
 # Value for variables in create-log-system
 # Load Balancer
 load_balancer_type_value = "application" # "application" or "network"
-http_port_value = 80
 # EC2 Instance
 ami_id_value = "ami-0f9de6e2d2f067fca" # Amazon Ubuntu 22.04, SSD Volume Type
 instance_type_value = "t3.large"

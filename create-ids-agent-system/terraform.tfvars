@@ -1,6 +1,5 @@
 #load balancer
 load_balancer_type_value = "application" # Application Load Balancer
-http_port_value = 80 # HTTP port for the Application Load Balancer
 
 # auto scaling group
 ami_id_value = "ami-0f9de6e2d2f067fca" # ubuntu 22.04 ami

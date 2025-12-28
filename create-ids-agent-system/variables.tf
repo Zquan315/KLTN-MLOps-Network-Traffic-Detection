@@ -4,11 +4,6 @@ variable "load_balancer_type_value" {
   type        = string
 }
 
-variable "http_port_value" {
-  description = "HTTP port for the Application Load Balancer"
-  type        = number
-}
-
 # variables for autoscaling group
 variable "ami_id_value" {
   description = "AMI ID for the EC2 instances"

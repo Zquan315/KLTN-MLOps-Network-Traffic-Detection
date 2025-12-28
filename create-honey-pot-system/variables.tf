@@ -3,10 +3,6 @@ variable "load_balancer_type_value" {
   type        = string
 }
 
-variable "http_port_value" {
-  description = "HTTP port for the ALB"
-  type        = number
-}
 
 variable "ami_id_value" {
   description = "AMI ID for the EC2 instances"

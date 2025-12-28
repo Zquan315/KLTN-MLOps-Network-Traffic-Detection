@@ -16,6 +16,12 @@ data "terraform_remote_state" "infra" {
   }
 }
 
+data "aws_acm_certificate" "honey_pot" {
+  domain      = "*.qmuit.id.vn"
+  statuses    = ["ISSUED"]
+  most_recent = true
+}
+
 # Create ALB and Target Groups 
 module "alb_module_honey_pot" {
   source = "../modules/alb_module"
@@ -28,7 +34,7 @@ module "alb_module_honey_pot" {
   ]
 
   vpc_id                = data.terraform_remote_state.infra.outputs.vpc_id
-  http_port             = var.http_port_value
+  certificate_arn = data.aws_acm_certificate.honey_pot.arn
 
   routes = [
     { name = "honey-pot",     port = 5500, path_patterns = ["/"],        health_path = "/health",      matcher = "200" },

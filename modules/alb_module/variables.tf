@@ -47,3 +47,9 @@ variable "default_route_name" {
   type        = string
   description = "Tên route làm default (ứng với path /)"
 }
+
+variable "certificate_arn" {
+  type        = string
+  description = "ACM certificate ARN for HTTPS listener"
+}
+

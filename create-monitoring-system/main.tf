@@ -17,6 +17,12 @@ data "terraform_remote_state" "infra" {
   }
 }
 
+data "aws_acm_certificate" "monitoring" {
+  domain      = "*.qmuit.id.vn"
+  statuses    = ["ISSUED"]
+  most_recent = true
+}
+
 # Create ALB and Target Groups 
 module "alb_module_monitoring" {
   source = "../modules/alb_module"
@@ -29,8 +35,8 @@ module "alb_module_monitoring" {
   ]
 
   vpc_id                = data.terraform_remote_state.infra.outputs.vpc_id
-  http_port             = var.http_port_value
-
+  certificate_arn = data.aws_acm_certificate.monitoring.arn
+  
   routes = [
     { name = "prometheus", port = 9090, path_patterns = ["/prometheus", "/prometheus/*"], health_path = "/prometheus", matcher = "200-399" },
     { name = "alertmanager", port = 9093, path_patterns = ["/alertmanager", "/alertmanager/*"], health_path = "/alertmanager", matcher = "200-399" },

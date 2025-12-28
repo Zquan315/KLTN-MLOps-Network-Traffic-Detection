@@ -41,10 +41,14 @@ resource "aws_lb_target_group" "tg" {
   deregistration_delay = 30
 }
 
-resource "aws_lb_listener" "http" {
+
+resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.alb.arn
-  port              = var.http_port
-  protocol          = "HTTP"
+  port              = 443
+  protocol          = "HTTPS"
+
+  ssl_policy      = "ELBSecurityPolicy-TLS13-1-2-Res-PQ-2025-09"
+  certificate_arn = var.certificate_arn
 
   default_action {
     type             = "forward"
@@ -52,12 +56,13 @@ resource "aws_lb_listener" "http" {
   }
 }
 
+
+
 # Tạo listener rules cho các route KHÁC default (default dùng action mặc định)
 resource "aws_lb_listener_rule" "rule" {
   for_each    = { for k, v in local.routes_map : k => v if k != var.default_route_name }
-  listener_arn = aws_lb_listener.http.arn
+  listener_arn = aws_lb_listener.https.arn
   priority     = 10 + index(keys(local.routes_map), each.key)
-
   action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.tg[each.key].arn
@@ -67,3 +72,5 @@ resource "aws_lb_listener_rule" "rule" {
     path_pattern { values = each.value.path_patterns }
   }
 }
+
+
