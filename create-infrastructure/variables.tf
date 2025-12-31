@@ -140,3 +140,23 @@ variable "eks_cluster_name" {
   description = "EKS Cluster name"
   type        = string
 }
+
+# variables for EFS
+variable "efs_name_value" {
+  description = "Name of the EFS file system"
+  type        = string
+}
+variable "efs_token_value" {
+  description = "A unique name used as reference when creating the EFS"
+  type        = string
+}
+variable "efs_performance_mode_value" {
+  description = "The file system performance mode. Can be either generalPurpose or maxIO"
+  type        = string
+  default     = "generalPurpose"
+}
+variable "efs_throughput_mode_value" {
+  description = "Throughput mode for the file system. Valid values: bursting, provisioned, or elastic"
+  type        = string
+  default     = "bursting"
+}

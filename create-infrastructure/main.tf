@@ -67,13 +67,13 @@ module "security_group_module" {
 module "efs_module" {
   source = "../modules/efs_module"
   
-  efs_name       = "monitoring-efs"
-  creation_token = "monitoring-efs-token"
+  efs_name       = var.efs_name_value
+  creation_token = var.efs_token_value
   encrypted      = true
   
   # Use general purpose performance mode for monitoring workloads
-  performance_mode = "generalPurpose"
-  throughput_mode  = "bursting"
+  performance_mode = var.efs_performance_mode_value
+  throughput_mode  = var.efs_throughput_mode_value
   
   # Create mount targets in public subnets where monitoring instances run
   subnet_ids = [
@@ -83,18 +83,6 @@ module "efs_module" {
   
   # Use EFS security group
   security_group_ids = [module.security_group_module.sg_efs_id]
-  
-  # Prometheus runs as nobody user (uid/gid 65534)
-  prometheus_uid = 65534
-  prometheus_gid = 65534
-  
-  # Grafana runs as user 472
-  grafana_uid = 472
-  grafana_gid = 472
-  
-  # Alertmanager runs as nobody user (uid/gid 65534)
-  alertmanager_uid = 65534
-  alertmanager_gid = 65534
   
   tags = {
     Name        = "monitoring-efs"
