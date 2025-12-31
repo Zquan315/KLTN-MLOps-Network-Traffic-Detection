@@ -12,3 +12,8 @@ output "sg_alb_id" {
   description = "The ID of the security group created for ALB"
   value       = aws_security_group.sg_alb.id
 }
+
+output "sg_efs_id" {
+  description = "The ID of the security group created for EFS"
+  value       = aws_security_group.sg_efs.id
+}

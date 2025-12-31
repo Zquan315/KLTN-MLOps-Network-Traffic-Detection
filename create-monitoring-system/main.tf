@@ -69,6 +69,7 @@ module "asg_module_monitoring" {
     MONITOR_URL = "monitoring.qmuit.id.vn"
     API_URL = "api.qmuit.id.vn"
     HONEYPOT_URL = "honeypot.qmuit.id.vn"
+    EFS_DNS_NAME = data.terraform_remote_state.infra.outputs.efs_dns_name
   }
 
   subnet_ids                = [

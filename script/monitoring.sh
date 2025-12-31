@@ -78,13 +78,51 @@ echo "[✓] Node Exporter running on port :9100"
 
 
 sudo apt update -y
-sudo apt install -y docker.io  docker-compose
+sudo apt install -y docker.io  docker-compose nfs-common
 sudo systemctl enable --now docker
 sudo usermod -aG docker $USER
 
 sudo mkdir -p /opt/monitoring
 sudo mkdir -p /opt/monitoring/rules
 sudo mkdir -p /opt/monitoring/alertmanager
+
+# ----------------------------------------------------------
+#  EFS Mount for Persistent Storage
+# ----------------------------------------------------------
+echo "[+] Mounting EFS for persistent monitoring data..."
+
+# Get EFS DNS from Terraform remote state or metadata
+EFS_DNS="${EFS_DNS_NAME}"
+
+# Create mount point for EFS
+sudo mkdir -p /mnt/efs
+
+# Mount EFS to /mnt/efs
+echo "[+] Mounting EFS filesystem: $EFS_DNS..."
+sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport $EFS_DNS:/ /mnt/efs
+
+# Create directories for each service on EFS
+sudo mkdir -p /mnt/efs/prometheus
+sudo mkdir -p /mnt/efs/grafana-data
+sudo mkdir -p /mnt/efs/grafana-db
+sudo mkdir -p /mnt/efs/alertmanager
+
+# Set correct permissions
+sudo chown -R 65534:65534 /mnt/efs/prometheus
+sudo chown -R 472:472 /mnt/efs/grafana-data
+sudo chown -R 999:999 /mnt/efs/grafana-db
+sudo chown -R 65534:65534 /mnt/efs/alertmanager
+
+# Add to /etc/fstab for persistence across reboots
+if ! grep -q "$EFS_DNS" /etc/fstab; then
+  echo "$EFS_DNS:/ /mnt/efs nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport,_netdev 0 0" | sudo tee -a /etc/fstab
+fi
+
+echo "  - Grafana database: /mnt/efs/grafana-db (PostgreSQL)nt/efs"
+echo "  - Prometheus data: /mnt/efs/prometheus"
+echo "  - Grafana data: /mnt/efs/grafana"
+echo "  - Alertmanager data: /mnt/efs/alertmanager"
+# ----------------------------------------------------------
 
 sudo cat > /opt/monitoring/prometheus.yml <<'YAML'
 global:
@@ -105,7 +143,7 @@ rule_files:
 scrape_configs:
   - job_name: 'ids-node'  
     metrics_path: /metrics
-    scheme: http
+    scheme: https
     static_configs: 
       - targets: ["${IDS_URL}"] 
         labels:
@@ -113,7 +151,7 @@ scrape_configs:
 
   - job_name: 'log-system'  
     metrics_path: /metrics
-    scheme: http
+    scheme: https
     static_configs: 
       - targets: ["${LOG_URL}"] 
         labels:
@@ -121,7 +159,7 @@ scrape_configs:
 
   - job_name: 'monitoring-system'  
     metrics_path: /metrics
-    scheme: http
+    scheme: https
     static_configs: 
       - targets: ["${MONITOR_URL}"] 
         labels:
@@ -129,7 +167,7 @@ scrape_configs:
 
   - job_name: 'api-system'  
     metrics_path: /metrics
-    scheme: http
+    scheme: https
     static_configs: 
       - targets: ["${API_URL}"] 
         labels:
@@ -137,7 +175,7 @@ scrape_configs:
 
   - job_name: 'honeypot-system'  
     metrics_path: /metrics
-    scheme: http
+    scheme: https
     static_configs: 
       - targets: ["${HONEYPOT_URL}"] 
         labels:
@@ -302,13 +340,7 @@ receivers:
         send_resolved: true
 ALERTMGR
 
-sudo mkdir -p /opt/monitoring/grafana_data
-sudo mkdir -p /opt/monitoring/prometheus_data
-sudo mkdir -p /opt/monitoring/alertmanager_data
-sudo chmod 777 -R /opt/monitoring/grafana_data /opt/monitoring/prometheus_data /opt/monitoring/alertmanager_data
-
 sudo cat > /opt/monitoring/docker-compose.yml <<'YAML'
-version: '3.8'
 services:
   prometheus:
     image: prom/prometheus:latest
@@ -322,7 +354,7 @@ services:
     volumes:
       - /opt/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - /opt/monitoring/rules:/etc/prometheus/rules:ro
-      - /opt/monitoring/prometheus_data:/prometheus
+      - /mnt/efs/prometheus:/prometheus
     ports:
       - "9090:9090"
     restart: unless-stopped
@@ -339,15 +371,30 @@ services:
       - --web.route-prefix=/alertmanager
     volumes:
       - /opt/monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
-      - /opt/monitoring/alertmanager_data:/alertmanager
+      - /mnt/efs/alertmanager:/alertmanager
     ports:
       - "9093:9093"
     restart: unless-stopped
 
+  grafana-db:
+    image: postgres:15-alpine
+    container_name: grafana-db
+    environment:
+      - POSTGRES_DB=grafana
+      - POSTGRES_USER=grafana
+      - POSTGRES_PASSWORD=grafana_secure_password_123
+    volumes:
+      - /mnt/efs/grafana-db:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U grafana"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
-    user: "472:472"
     environment:
       - GF_SERVER_ROOT_URL=https://monitoring.qmuit.id.vn
       - GF_SERVER_SERVE_FROM_SUB_PATH=false
@@ -355,18 +402,20 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin123
       - GF_SECURITY_ADMIN_PASSWORD_CHANGE_REQUIRED=false
       - GF_AUTH_LDAP_ENABLED=false
-      - GF_PATHS_DATA=/var/lib/grafana
-      - GF_PATHS_LOGS=/var/log/grafana
-      - GF_PATHS_PLUGINS=/var/lib/grafana/plugins
-      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_DATABASE_TYPE=postgres
+      - GF_DATABASE_HOST=grafana-db:5432
+      - GF_DATABASE_NAME=grafana
+      - GF_DATABASE_USER=grafana
+      - GF_DATABASE_PASSWORD=grafana_secure_password_123
+      - GF_DATABASE_SSL_MODE=disable
     ports:
       - "3000:3000"
     volumes:
-      - /opt/monitoring/grafana_data:/var/lib/grafana
+      - /mnt/efs/grafana-data:/var/lib/grafana
     restart: unless-stopped
-volumes:
-  prometheus_data:
-  alertmanager_data:
+    depends_on:
+      grafana-db:
+        condition: service_healthy
 YAML
 
 echo "[+] Starting Docker Compose services..."

@@ -73,3 +73,36 @@ resource "aws_security_group" "sg_alb" {
     ipv6_cidr_blocks = ["::/0"]
   }
 }
+
+resource "aws_security_group" "sg_efs" {
+  vpc_id = var.vpc_id
+  name   = "sg_efs"
+  tags = {
+    Name = "security_group_efs"
+  }
+
+  # Allow NFS traffic from public security group (for monitoring instances)
+  ingress {
+    description     = "NFS from monitoring instances"
+    from_port       = 2049
+    to_port         = 2049
+    protocol        = "tcp"
+    security_groups = [aws_security_group.security_group_public.id]
+  }
+
+  # Allow NFS traffic from private security group (if needed in the future)
+  ingress {
+    description     = "NFS from private instances"
+    from_port       = 2049
+    to_port         = 2049
+    protocol        = "tcp"
+    security_groups = [aws_security_group.security_group_private.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}

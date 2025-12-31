@@ -63,6 +63,46 @@ module "security_group_module" {
 
 }
 
+# Create EFS File System for Monitoring (Prometheus, Grafana, Alertmanager)
+module "efs_module" {
+  source = "../modules/efs_module"
+  
+  efs_name       = "monitoring-efs"
+  creation_token = "monitoring-efs-token"
+  encrypted      = true
+  
+  # Use general purpose performance mode for monitoring workloads
+  performance_mode = "generalPurpose"
+  throughput_mode  = "bursting"
+  
+  # Create mount targets in public subnets where monitoring instances run
+  subnet_ids = [
+    module.vpc_module.subnet_public_ids[1],
+    module.vpc_module.subnet_public_ids[2]
+  ]
+  
+  # Use EFS security group
+  security_group_ids = [module.security_group_module.sg_efs_id]
+  
+  # Prometheus runs as nobody user (uid/gid 65534)
+  prometheus_uid = 65534
+  prometheus_gid = 65534
+  
+  # Grafana runs as user 472
+  grafana_uid = 472
+  grafana_gid = 472
+  
+  # Alertmanager runs as nobody user (uid/gid 65534)
+  alertmanager_uid = 65534
+  alertmanager_gid = 65534
+  
+  tags = {
+    Name        = "monitoring-efs"
+    Environment = "production"
+    Purpose     = "monitoring-data-persistence"
+  }
+}
+
 # Create S3 bucket
 module "s3_module" {
   source = "../modules/s3_module"
