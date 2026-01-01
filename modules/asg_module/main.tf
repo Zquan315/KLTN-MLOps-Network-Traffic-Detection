@@ -131,22 +131,6 @@ resource "aws_cloudwatch_metric_alarm" "memory_high" {
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "memory_low" {
-  alarm_name          = "${var.asg_name}-memory-low"
-  comparison_operator = "LessThanOrEqualToThreshold"
-  evaluation_periods  = 3
-  metric_name         = "mem_used_percent"
-  namespace           = "CWAgent"
-  period              = 120
-  statistic           = "Average"
-  threshold           = 50
-  alarm_description   = "Scale in when Memory usage <= 40%"
-  alarm_actions       = [aws_autoscaling_policy.scale_in_policy.arn]
-  treat_missing_data  = "notBreaching"
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.asg.name
-  }
-}
 
 # ==========================================
 # Disk-based Scaling Policies
@@ -167,5 +151,66 @@ resource "aws_cloudwatch_metric_alarm" "disk_high" {
     AutoScalingGroupName = aws_autoscaling_group.asg.name
     path                 = "/"
     fstype               = "ext4"
+  }
+}
+
+# ==========================================
+# Network-based Scaling Policies
+# ==========================================
+
+# 1. Scale Out: Khi Network In > 80 Mbps
+# 80 Mbps = 10 MB/s = 600,000,000 Bytes / 60s
+resource "aws_cloudwatch_metric_alarm" "network_in_high" {
+  alarm_name          = "${var.asg_name}-network-in-high"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "NetworkIn"
+  namespace           = "AWS/EC2" 
+  period              = 60        
+  statistic           = "Average"    
+  threshold           = 600000000  # ~80 Mbps
+  alarm_description   = "Scale out when Network In > 80 Mbps"
+  alarm_actions       = [aws_autoscaling_policy.scale_out_policy.arn]
+  
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.asg.name
+  }
+}
+
+# 2. Scale Out: Khi Network Out > 80 Mbps
+# (Phòng trường hợp IDS trả response lớn hoặc forward traffic nhiều)
+resource "aws_cloudwatch_metric_alarm" "network_out_high" {
+  alarm_name          = "${var.asg_name}-network-out-high"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "NetworkOut"
+  namespace           = "AWS/EC2"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 600000000  # ~80 Mbps
+  alarm_description   = "Scale out when Network Out > 80 Mbps"
+  alarm_actions       = [aws_autoscaling_policy.scale_out_policy.arn]
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.asg.name
+  }
+}
+
+# Khi Network In < 10 Mbps
+# 10 Mbps = 1.25 MB/s = 75,000,000 Bytes / 60s
+resource "aws_cloudwatch_metric_alarm" "network_low" {
+  alarm_name          = "${var.asg_name}-network-low"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = 3      
+  metric_name         = "NetworkIn"
+  namespace           = "AWS/EC2"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 75000000  # ~10 Mbps
+  alarm_description   = "Scale in when Network In < 10 Mbps"
+  alarm_actions       = [aws_autoscaling_policy.scale_in_policy.arn]
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.asg.name
   }
 }

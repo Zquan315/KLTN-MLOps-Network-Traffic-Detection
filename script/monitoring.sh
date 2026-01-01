@@ -112,19 +112,14 @@ sudo chown -R 65534:65534 /mnt/efs/prometheus
 sudo chown -R 472:472 /mnt/efs/grafana-data
 sudo chown -R 999:999 /mnt/efs/grafana-db
 sudo chown -R 65534:65534 /mnt/efs/alertmanager
+sudo chmod 700 /mnt/efs/grafana-db
 
 # Add to /etc/fstab for persistence across reboots
 if ! grep -q "$EFS_DNS" /etc/fstab; then
   echo "$EFS_DNS:/ /mnt/efs nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport,_netdev 0 0" | sudo tee -a /etc/fstab
 fi
 
-echo "  - Grafana database: /mnt/efs/grafana-db (PostgreSQL)nt/efs"
-echo "  - Prometheus data: /mnt/efs/prometheus"
-echo "  - Grafana data: /mnt/efs/grafana"
-echo "  - Alertmanager data: /mnt/efs/alertmanager"
-# ----------------------------------------------------------
-
-sudo cat > /opt/monitoring/prometheus.yml <<'YAML'
+sudo cat > /opt/monitoring/prometheus.yml <<YAML
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
@@ -357,7 +352,7 @@ services:
       - /mnt/efs/prometheus:/prometheus
     ports:
       - "9090:9090"
-    restart: unless-stopped
+    restart: always
     depends_on:
       - alertmanager
 
@@ -374,23 +369,40 @@ services:
       - /mnt/efs/alertmanager:/alertmanager
     ports:
       - "9093:9093"
-    restart: unless-stopped
+    restart: always
 
   grafana-db:
     image: postgres:15-alpine
     container_name: grafana-db
     environment:
-      - POSTGRES_DB=grafana
+      - POSTGRES_DB=postgres
       - POSTGRES_USER=grafana
       - POSTGRES_PASSWORD=grafana_secure_password_123
+      - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
     volumes:
       - /mnt/efs/grafana-db:/var/lib/postgresql/data
-    restart: unless-stopped
+    restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U grafana"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
+
+  # SERVICE QUAN TRỌNG: Tự động tạo DB grafana nếu chưa có
+  grafana-db-init:
+    image: postgres:15-alpine
+    container_name: grafana-db-init
+    restart: "no"
+    environment:
+      - PGPASSWORD=grafana_secure_password_123
+    depends_on:
+      grafana-db:
+        condition: service_healthy
+    # Logic: Đợi DB chính lên -> Thử tạo DB grafana -> Nếu lỗi (do đã có) thì bỏ qua
+    command: >
+      sh -c "until pg_isready -h grafana-db -U grafana; do sleep 2; done;
+             echo 'Check/Create database grafana...';
+             psql -h grafana-db -U grafana -d postgres -c 'CREATE DATABASE grafana' || echo 'Database grafana already exists, skipping...'"
 
   grafana:
     image: grafana/grafana:latest
@@ -412,13 +424,15 @@ services:
       - "3000:3000"
     volumes:
       - /mnt/efs/grafana-data:/var/lib/grafana
-    restart: unless-stopped
+    restart: always
     depends_on:
       grafana-db:
         condition: service_healthy
+      grafana-db-init:
+        condition: service_completed_successfully
 YAML
 
-echo "[+] Starting Docker Compose services..."
+echo "[+] Starting Docker Compose seryvices..."
 cd /opt/monitoring/
 sudo -E docker-compose up -d
 

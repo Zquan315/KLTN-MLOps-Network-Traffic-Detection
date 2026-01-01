@@ -124,7 +124,7 @@ sudo -E -u ubuntu bash -c "
   export EMAIL_LAMBDA_URL='$EMAIL_LAMBDA_URL'
   nohup gunicorn application:app \
   -k gthread \
-  --workers 2 \
+  --workers 1 \
   --threads 10 \
   --bind 0.0.0.0:5001 \
   --timeout 300 \

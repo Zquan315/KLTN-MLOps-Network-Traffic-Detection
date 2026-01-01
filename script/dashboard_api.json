@@ -65,8 +65,8 @@
       },
       "targets": [
         {
-          "expr": "1000 * sum(rate(prediction_latency_ms_sum{job=~\"$job\", instance=~\"$instance\"}[5m])) / sum(rate(prediction_latency_ms_count{job=~\"$job\", instance=~\"$instance\"}[5m]))",
-          "legendFormat": "avg p50 approx",
+          "expr": "sum(rate(prediction_latency_ms_sum{job=~\"$job\", instance=~\"$instance\"}[5m])) / sum(rate(prediction_latency_ms_count{job=~\"$job\", instance=~\"$instance\"}[5m]))",
+          "legendFormat": "avg latency",
           "refId": "A"
         }
       ],
