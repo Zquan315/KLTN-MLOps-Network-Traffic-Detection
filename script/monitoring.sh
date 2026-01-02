@@ -130,13 +130,14 @@ alerting:
     - static_configs:
         - targets:
             - alertmanager:9093
+      path_prefix: /alertmanager
 
 # Load alerting rules
 rule_files:
   - '/etc/prometheus/rules/*.yml'
 
 scrape_configs:
-  - job_name: 'ids-node'  
+  - job_name: 'ids-system'  
     metrics_path: /metrics
     scheme: https
     static_configs: 
@@ -266,25 +267,6 @@ groups:
           summary: "Critical API latency on {{ $labels.instance }}"
           description: "API p95 latency is above 2000ms (current: {{ $value | humanize }}ms)"
 
-      - alert: HighPredictionRequestRate
-        expr: sum by (job, instance) (rate(prediction_requests_total[5m])) > 100
-        for: 10m
-        labels:
-          severity: warning
-        annotations:
-          summary: "High prediction request rate on {{ $labels.instance }}"
-          description: "Prediction requests above 100 req/s for 10+ minutes"
-
-      # Model & Process
-      - alert: NoModelLearning
-        expr: rate(model_learn_total[10m]) == 0
-        for: 30m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Model is not learning on {{ $labels.instance }}"
-          description: "No model updates detected for more than 30 minutes"
-
       - alert: HighProcessMemory
         expr: process_resident_memory_bytes{job="api-system"} / 1024 / 1024 > 2048
         for: 5m
@@ -303,15 +285,15 @@ groups:
           summary: "API service is down on {{ $labels.instance }}"
           description: "API service has been down for more than 2 minutes"
 
-      - alert: HighAttackDetectionRate
-        expr: rate(prediction_requests_total{job="api-system"}[5m]) > 100
-        for: 5m
+      - alert: HighPredictionRequestRate
+        expr: sum by (instance) (rate(prediction_requests_total{job="api-system", instance="api.qmuit.id.vn"}[2m])) > 50
+        for: 2m
         labels:
-          severity: warning
+          severity: critical
           component: ids
         annotations:
-          summary: "High attack detection rate on {{ $labels.instance }}"
-          description: "More than 100 predictions/s for 5 minutes. Possible attack in progress"
+          summary: "High prediction request rate on api.qmuit.id.vn"
+          description: "More than 50 predictions/s for 2 minutes."
 RULES
 
 sudo cat > /opt/monitoring/alertmanager/alertmanager.yml <<'ALERTMGR'
@@ -320,7 +302,7 @@ global:
   smtp_smarthost: 'smtp.gmail.com:587'
   smtp_from: 'tocongquan315@gmail.com'
   smtp_auth_username: 'tocongquan315@gmail.com'
-  smtp_auth_password: 'erubesawmtvzubkq'
+  smtp_auth_password: 'maswtwbwedkpmkzp'
   smtp_require_tls: true
 
 route:
@@ -331,7 +313,7 @@ receivers:
     email_configs:
       - to: 'tocongquan315@gmail.com'
         headers:
-          Subject: '🚨 [Monitoring system alert] {{ .GroupLabels.alertname }}'
+          Subject: '🚨 [{{ .Status | toUpper }}] {{ .CommonLabels.alertname }} - {{ .CommonLabels.instance }}'
         send_resolved: true
 ALERTMGR
 
@@ -363,7 +345,6 @@ services:
       - --config.file=/etc/alertmanager/alertmanager.yml
       - --storage.path=/alertmanager
       - --web.external-url=https://monitoring.qmuit.id.vn/alertmanager
-      - --web.route-prefix=/alertmanager
     volumes:
       - /opt/monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
       - /mnt/efs/alertmanager:/alertmanager
