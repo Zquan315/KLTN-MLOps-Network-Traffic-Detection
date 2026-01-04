@@ -124,10 +124,10 @@ sudo -E -u ubuntu bash -c "
   export EMAIL_LAMBDA_URL='$EMAIL_LAMBDA_URL'
   nohup gunicorn application:app \
   -k gthread \
-  --workers 6 \
-  --threads 4 \
+  --workers 1 \
+  --threads 10 \
   --bind 0.0.0.0:5001 \
-  --timeout 60 \
+  --timeout 300 \
   --keep-alive 5 \
   --access-logfile /home/ubuntu/logs/access.log \
   --error-logfile /home/ubuntu/logs/error.log \
@@ -136,7 +136,7 @@ sudo -E -u ubuntu bash -c "
 "
 sleep 3
 
-if pgrep -f "application.py" >/dev/null; then
+if pgrep -f "application:app" >/dev/null; then
   echo "[✓] IDS Agent running on port 5001"
 else
   echo "[✗] Failed to start IDS Agent"

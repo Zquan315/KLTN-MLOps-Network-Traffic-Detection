@@ -101,7 +101,7 @@ sudo -u ubuntu /home/ubuntu/venv/bin/pip install -r requirements.txt
 cat > /home/ubuntu/honeypot_app.py <<'PYTHON'
 #!/usr/bin/env python3
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -125,7 +125,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="ARF IDS Honeypot System",
     description="Decoy system for attack traffic analysis",
-    version="2.0.0"
+    version="1.0.0"
 )
 
 # ==================== CONFIG ====================
@@ -142,9 +142,30 @@ attack_stats = {
     "by_dst_port": {},
     "by_date": {},
     "high_confidence_attacks": 0,  # IDS confidence > 0.9
-    "start_time": datetime.now(timezone. utc).isoformat(),
+    "start_time": datetime.now(timezone.utc).isoformat(),
     "last_attack_time": None
 }
+
+def write_log_background(log_entry: dict, date_str: str):
+    try:
+        csv_file = LOGS_DIR / f"attacks_{date_str}.csv"
+        is_new_file = not csv_file.exists()
+        
+        with open(csv_file, 'a', newline='', encoding='utf-8') as f:
+            fieldnames = [
+                "honeypot_receive_time", "flow_id", "src_ip", "src_port",
+                "dst_ip", "dst_port", "protocol", "ids_label", "ids_confidence",
+                "detection_time", "redirection_method", "total_packets",
+                "total_bytes", "flow_duration_ms", "tcp_syn", "tcp_fin", "tcp_rst"
+            ]
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            if is_new_file:
+                writer.writeheader()
+            writer.writerow(log_entry)
+            
+        logger.info(f"[LOGGED] Flow {log_entry['flow_id']} saved to CSV")
+    except Exception as e:
+        logger.error(f"[LOG ERROR] {e}")
 
 def load_stats():
     """Load stats from file if exists"""
@@ -229,51 +250,29 @@ async def health():
     }
 
 @app.post("/receive_attack")
-async def receive_attack(flow: dict):
+async def receive_attack(flow: dict, background_tasks: BackgroundTasks):
     """
-    Receive redirected attack traffic from IDS
-    
-    Expected JSON payload (new enriched format):
-      - flow_id:   Unique flow identifier
-      - src_ip, src_port, dst_ip, dst_port, protocol:   5-tuple
-      - ids_label, ids_confidence:  IDS classification
-      - detection_timestamp:  When IDS detected the attack
-      - redirection_method:  How traffic was redirected
-      - session_metadata: Session information (packets, bytes, flags)
-      - flow_features: Full flow features (optional)
-    
-    Also supports legacy format for backward compatibility. 
+    Nhận traffic và trả lời NGAY LẬP TỨC. Việc ghi log đẩy xuống background.
     """
     try:  
-        # Extract metadata (supports both old and new format)
         metadata = extract_flow_metadata(flow)
         
-        flow_id = metadata["flow_id"]
-        src_ip = metadata["src_ip"]
-        src_port = metadata["src_port"]
-        dst_ip = metadata["dst_ip"]
-        dst_port = metadata["dst_port"]
-        protocol = metadata["protocol"]
-        ids_confidence = metadata["ids_confidence"]
-        
-        # Get current time in UTC+7 (Vietnam)
         dt_vn = datetime.now(timezone(timedelta(hours=7)))
-        date_str = dt_vn. strftime('%Y%m%d')
+        date_str = dt_vn.strftime('%Y%m%d')
         timestamp = dt_vn.strftime('%Y-%m-%d %H:%M:%S')
         
-        # Prepare log entry
         session_meta = metadata.get("session_metadata", {})
         
         log_entry = {
             "honeypot_receive_time": timestamp,
-            "flow_id": flow_id,
-            "src_ip": src_ip,
-            "src_port": src_port,
-            "dst_ip": dst_ip,
-            "dst_port":  dst_port,
-            "protocol": protocol,
+            "flow_id": metadata["flow_id"],
+            "src_ip": metadata["src_ip"],
+            "src_port": metadata["src_port"],
+            "dst_ip": metadata["dst_ip"],
+            "dst_port":  metadata["dst_port"],
+            "protocol": metadata["protocol"],
             "ids_label": metadata["ids_label"],
-            "ids_confidence": round(ids_confidence, 4),
+            "ids_confidence": round(metadata["ids_confidence"], 4),
             "detection_time":  metadata["detection_time"],
             "redirection_method": metadata["redirection_method"],
             "total_packets": session_meta.get("total_packets", 0),
@@ -284,69 +283,19 @@ async def receive_attack(flow: dict):
             "tcp_rst": session_meta. get("tcp_flags", {}).get("RST", 0)
         }
         
-        # Write to dated CSV file
-        csv_file = LOGS_DIR / f"attacks_{date_str}.csv"
-        is_new_file = not csv_file.exists()
-        
-        with open(csv_file, 'a', newline='', encoding='utf-8') as f:
-            fieldnames = [
-                "honeypot_receive_time", "flow_id", "src_ip", "src_port",
-                "dst_ip", "dst_port", "protocol", "ids_label", "ids_confidence",
-                "detection_time", "redirection_method", "total_packets",
-                "total_bytes", "flow_duration_ms", "tcp_syn", "tcp_fin", "tcp_rst"
-            ]
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            
-            if is_new_file:
-                writer.writeheader()
-                logger.info(f"[CSV] Created new file: {csv_file}")
-            
-            writer.writerow(log_entry)
-        
-        # Update stats
+        # Cập nhật số liệu RAM ngay
         attack_stats["total_received"] += 1
-        attack_stats["last_attack_time"] = datetime.now(timezone.utc).isoformat()
-        
-        # By protocol
-        attack_stats["by_protocol"][protocol] = attack_stats["by_protocol"].get(protocol, 0) + 1
-        
-        # By source IP
-        attack_stats["by_src_ip"][src_ip] = attack_stats["by_src_ip"].get(src_ip, 0) + 1
-        
-        # By destination port
-        attack_stats["by_dst_port"][str(dst_port)] = attack_stats["by_dst_port"]. get(str(dst_port), 0) + 1
-        
-        # By date
-        attack_stats["by_date"][date_str] = attack_stats["by_date"].get(date_str, 0) + 1
-        
-        # High confidence attacks
-        if ids_confidence > 0.9:
-            attack_stats["high_confidence_attacks"] = attack_stats. get("high_confidence_attacks", 0) + 1
-        
-        # Save stats every 10 attacks
-        if attack_stats["total_received"] % 10 == 0:
-            save_stats()
-        
-        # Log
-        logger.info(
-            f"[✓ RECEIVED] Flow {flow_id[: 16]}...  | "
-            f"{src_ip}:{src_port} → {dst_ip}:{dst_port} | "
-            f"Proto: {protocol} | "
-            f"Confidence: {ids_confidence:.2%} | "
-            f"Method: {metadata['redirection_method']}"
-        )
+
+        background_tasks.add_task(write_log_background, log_entry, date_str)
         
         return {
-            "status": "received",
-            "flow_id":  flow_id,
-            "honeypot_time": timestamp,
-            "logged_to":   str(csv_file),
-            "total_attacks_received": attack_stats["total_received"]
+            "status": "received", 
+            "flow_id": metadata["flow_id"]
         }
         
     except Exception as e: 
-        logger.error(f"[ERROR] Failed to process attack: {e}")
-        raise HTTPException(status_code=500, detail=f"Error logging attack: {str(e)}")
+        logger.error(f"[ERROR] {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/logs/{date}")
 async def download_logs(date: str):

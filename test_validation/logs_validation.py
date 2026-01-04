@@ -16,7 +16,6 @@ USERNAME = "admin"
 PASSWORD = "admin123"
 
 # Số lượng người dùng giả lập cùng lúc (Concurrent Users)
-# Với t3.medium, mức 50-100 là hợp lý để test.
 CONCURRENT_USERS = 1000
 
 # Số lần lặp lại request cho mỗi user (để bài test chạy lâu hơn chút)

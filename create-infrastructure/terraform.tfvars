@@ -135,3 +135,7 @@ table_name_value = "ids_log_system"
 
 # EKS
 eks_cluster_name = "arf-ids-cluster"
+
+# EFS
+efs_name_value        = "monitoring-efs"
+efs_token_value       = "monitoring-efs-token-qmuit-2004"

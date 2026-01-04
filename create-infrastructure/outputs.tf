@@ -101,3 +101,39 @@ output "eks_oidc_provider_arn" {
   description = "ARN of the OIDC Provider for EKS"
   value       = module.eks.oidc_provider_arn 
 }
+
+# EFS outputs
+output "efs_id" {
+  description = "The ID of the EFS file system for monitoring"
+  value       = module.efs_module.efs_id
+}
+
+output "efs_dns_name" {
+  description = "The DNS name of the EFS file system for monitoring"
+  value       = module.efs_module.efs_dns_name
+}
+
+output "efs_arn" {
+  description = "The ARN of the EFS file system for monitoring"
+  value       = module.efs_module.efs_arn
+}
+
+output "prometheus_access_point_id" {
+  description = "The ID of the Prometheus EFS access point"
+  value       = module.efs_module.prometheus_access_point_id
+}
+
+output "grafana_access_point_id" {
+  description = "The ID of the Grafana EFS access point"
+  value       = module.efs_module.grafana_access_point_id
+}
+
+output "alertmanager_access_point_id" {
+  description = "The ID of the Alertmanager EFS access point"
+  value       = module.efs_module.alertmanager_access_point_id
+}
+
+output "sg_efs_id" {
+  description = "The ID of the security group for EFS"
+  value       = module.security_group_module.sg_efs_id
+}
