@@ -286,10 +286,6 @@ resource "aws_iam_role_policy_attachment" "eks_node_training_data_access" {
   depends_on = [module.eks]
 }
 
-
-# ===========================================
-# IAM policy cho phép EKS node access DynamoDB
-# ===========================================
 resource "aws_iam_policy" "ids_dynamodb_access" {
   name = "ids-dynamodb-access"
 
@@ -315,6 +311,45 @@ resource "aws_iam_policy" "ids_dynamodb_access" {
 resource "aws_iam_role_policy_attachment" "eks_node_dynamodb_access" {
   role       = basename(module.eks.eks_managed_node_groups["api-nodes"].iam_role_arn)
   policy_arn = aws_iam_policy.ids_dynamodb_access.arn
+
+  depends_on = [module.eks]
+}
+
+locals {
+  oidc_provider_url = replace(module.eks.oidc_provider, "https://", "")
+}
+
+resource "aws_iam_role" "ebs_csi_irsa_role" {
+  name = "AmazonEKS_EBS_CSI_DriverRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = module.eks.oidc_provider_arn
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "${local.oidc_provider_url}:sub" = "system:serviceaccount:kube-system:ebs-csi-controller-sa"
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ebs_csi_irsa_role_attachment" {
+  role       = aws_iam_role.ebs_csi_irsa_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+}
+
+resource "aws_eks_addon" "ebs_csi" {
+  cluster_name             = module.eks.cluster_name
+  addon_name               = "aws-ebs-csi-driver"
+  service_account_role_arn = aws_iam_role.ebs_csi_irsa_role.arn
 
   depends_on = [module.eks]
 }
